@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ROOKIE — Vocab SRS</title>
+<style>
+:root{
+  --bg:#0d1117; --bg2:#151b23; --bg3:#1c232c; --line:#2a323d;
+  --tx:#e6edf3; --tx2:#9aa6b2; --tx3:#6b7681;
+  --acc:#6aa9ff; --acc2:#8b7cf6;
+  --again:#f2637e; --hard:#e8a33d; --good:#4bbf8a; --easy:#5aa9e6;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{
+  background:var(--bg); color:var(--tx);
+  font:16px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+u{text-decoration-color:var(--acc);text-underline-offset:3px}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px 40px}
+
+/* header */
+header{position:sticky;top:0;z-index:20;background:rgba(13,17,23,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.hd{max-width:760px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.brand{font-weight:700;letter-spacing:.02em;font-size:15px;white-space:nowrap}
+.brand span{color:var(--tx3);font-weight:500}
+.spacer{flex:1}
+.tabs{display:flex;gap:2px;background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:2px}
+.tabs button{padding:5px 11px;border-radius:7px;font-size:13px;color:var(--tx2)}
+.tabs button.on{background:var(--bg3);color:var(--tx)}
+.pbar{height:2px;background:var(--bg3)}
+.pbar>i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));width:0;transition:width .3s}
+
+/* counters */
+.counts{display:flex;gap:8px;justify-content:center;margin:18px 0 4px;font-size:13px;font-variant-numeric:tabular-nums}
+.counts b{font-size:15px}
+.cnt{display:flex;align-items:baseline;gap:6px;padding:5px 12px;border-radius:8px;background:var(--bg2);border:1px solid var(--line)}
+.cnt.n b{color:var(--acc)} .cnt.l b{color:var(--hard)} .cnt.r b{color:var(--good)}
+.cnt span{color:var(--tx3)}
+
+/* card */
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:26px 24px;margin-top:14px}
+.term{font-size:40px;font-weight:700;letter-spacing:-.02em;line-height:1.15;word-break:break-word}
+.pron{color:var(--tx3);font:13px ui-monospace,SFMono-Regular,Menlo,monospace;margin-top:7px;letter-spacing:.02em}
+.hint{color:var(--tx3);font-size:13px;margin-top:22px}
+.sec{margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+.lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--tx3);margin-bottom:6px;font-weight:600}
+.pos{display:inline-block;font-size:12px;color:var(--acc);background:rgba(106,169,255,.11);border:1px solid rgba(106,169,255,.25);padding:1px 8px;border-radius:6px;margin-right:8px;vertical-align:2px}
+.def{font-size:18px}
+.ex{color:#cfd8e3;font-style:italic;font-size:16px}
+.mn{background:var(--bg3);border-left:3px solid var(--acc2);border-radius:0 10px 10px 0;padding:12px 14px;font-size:15px;color:#d7dee7}
+.mn .tag{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--tx3);display:block;margin-bottom:4px}
+.mn i{color:var(--tx2)}
+
+/* buttons */
+.reveal{display:block;width:100%;margin-top:22px;padding:14px;border-radius:12px;background:var(--bg3);border:1px solid var(--line);font-weight:600;font-size:15px;transition:.15s}
+.reveal:hover{background:#232b36;border-color:#3a4450}
+.grades{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:20px}
+.g{padding:11px 4px;border-radius:11px;border:1px solid var(--line);background:var(--bg3);text-align:center;transition:.15s}
+.g:hover{transform:translateY(-1px)}
+.g .k{font-weight:650;font-size:14px;display:block}
+.g .t{font-size:11px;color:var(--tx3);display:block;margin-top:2px;font-variant-numeric:tabular-nums}
+.g1{border-color:rgba(242,99,126,.4)} .g1 .k{color:var(--again)}
+.g2{border-color:rgba(232,163,61,.4)} .g2 .k{color:var(--hard)}
+.g3{border-color:rgba(75,191,138,.4)} .g3 .k{color:var(--good)}
+.g4{border-color:rgba(90,169,230,.4)} .g4 .k{color:var(--easy)}
+.g1:hover{background:rgba(242,99,126,.1)} .g2:hover{background:rgba(232,163,61,.1)}
+.g3:hover{background:rgba(75,191,138,.1)} .g4:hover{background:rgba(90,169,230,.1)}
+
+.done{text-align:center;padding:60px 20px}
+.done h2{font-size:24px;margin:0 0 8px}
+.done p{color:var(--tx2);margin:0 0 22px}
+.btn{display:inline-block;padding:10px 18px;border-radius:10px;background:var(--bg3);border:1px solid var(--line);font-size:14px;font-weight:550}
+.btn:hover{background:#232b36}
+.btn.p{background:var(--acc);color:#06121f;border-color:var(--acc)}
+.btn.p:hover{background:#83b8ff}
+
+/* browse */
+.tools{display:flex;gap:8px;margin:16px 0;flex-wrap:wrap}
+input[type=search],select{background:var(--bg2);border:1px solid var(--line);color:var(--tx);border-radius:9px;padding:9px 12px;font:inherit;font-size:14px;outline:none}
+input[type=search]{flex:1;min-width:160px}
+input[type=search]:focus,select:focus{border-color:var(--acc)}
+.row{display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid var(--line);border-radius:11px;background:var(--bg2);margin-bottom:7px;cursor:pointer;transition:.12s}
+.row:hover{border-color:#3a4450;background:var(--bg3)}
+.row .w{font-weight:620;flex:1;min-width:0}
+.row .w small{display:block;font-weight:400;color:var(--tx3);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.chip{font-size:11px;padding:2px 8px;border-radius:20px;border:1px solid var(--line);color:var(--tx3);white-space:nowrap}
+.chip.new{color:var(--acc);border-color:rgba(106,169,255,.35)}
+.chip.lrn{color:var(--hard);border-color:rgba(232,163,61,.35)}
+.chip.rev{color:var(--good);border-color:rgba(75,191,138,.35)}
+.detail{padding:2px 14px 16px;border:1px solid var(--line);border-top:none;border-radius:0 0 11px 11px;background:var(--bg2);margin:-8px 0 7px}
+
+/* stats */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:16px 0}
+.tile{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:14px}
+.tile .v{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+.tile .l{font-size:12px;color:var(--tx3);margin-top:2px}
+.bars{display:flex;align-items:flex-end;gap:4px;height:126px;margin-top:12px;padding:0 2px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px 10px 8px}
+.bars>div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;height:100%}
+.bars .bar{width:100%;background:linear-gradient(180deg,var(--acc),#3b6fb5);border-radius:4px 4px 0 0;min-height:3px}
+.bars .bar.z{background:var(--bg3)}
+.bars .n{font-size:10px;color:var(--tx2);font-variant-numeric:tabular-nums;height:12px}
+.bars .cap{font-size:10px;color:var(--tx3);font-variant-numeric:tabular-nums;border-top:1px solid var(--line);width:100%;text-align:center;padding-top:4px}
+h3{font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--tx3);margin:26px 0 0;font-weight:600}
+.note{font-size:13px;color:var(--tx3);margin-top:10px;line-height:1.6}
+.setrow{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+.setrow input[type=number]{width:74px;background:var(--bg2);border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:6px 9px;font:inherit}
+.warn{color:var(--again)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--line);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:50}
+.toast.on{opacity:1}
+
+/* cram */
+.opt{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.opt button{padding:9px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg2);font-size:14px}
+.opt button.on{border-color:var(--acc);background:rgba(106,169,255,.12);color:var(--acc)}
+.opt button:hover{border-color:#3a4450}
+.setup{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:22px;margin-top:18px}
+.setup h2{margin:0 0 6px;font-size:21px}
+.setup p{margin:0;color:var(--tx2);font-size:14px}
+.setup .fld{margin-top:20px}
+.setup .fld>.lbl{margin-bottom:8px}
+.cramtop{display:flex;align-items:center;gap:10px;margin:16px 0 0;font-size:13px;color:var(--tx3)}
+.cramtop .track{flex:1;height:7px;background:var(--bg3);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.cramtop .track>i{display:block;height:100%;background:linear-gradient(90deg,var(--good),#5aa9e6);width:0;transition:width .3s}
+.cramtop b{color:var(--tx);font-variant-numeric:tabular-nums}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
+.two button{padding:15px 8px;border-radius:12px;border:1px solid var(--line);background:var(--bg3);font-weight:650;font-size:15px;transition:.15s}
+.two .no{border-color:rgba(242,99,126,.45);color:var(--again)}
+.two .no:hover{background:rgba(242,99,126,.12)}
+.two .yes{border-color:rgba(75,191,138,.45);color:var(--good)}
+.two .yes:hover{background:rgba(75,191,138,.12)}
+.two small{display:block;font-weight:400;font-size:11px;color:var(--tx3);margin-top:3px}
+.ask{font-size:13px;color:var(--tx3);letter-spacing:.03em;text-transform:uppercase;font-weight:600;margin-bottom:14px}
+.q-def{font-size:26px;line-height:1.4;font-weight:500}
+.streaks{display:flex;gap:6px;margin-top:14px}
+.dot{width:7px;height:7px;border-radius:99px;background:var(--bg3);border:1px solid var(--line)}
+.dot.on{background:var(--good);border-color:var(--good)}
+.misslist{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.misslist span{font-size:13px;padding:3px 10px;border-radius:8px;background:var(--bg3);border:1px solid var(--line)}
+
+@media (max-width:520px){
+  .term{font-size:32px}
+  .card{padding:20px 18px}
+  .g .t{display:none}
+  .brand span{display:none}
+  .tabs button{padding:5px 8px;font-size:12.5px}
+  .q-def{font-size:21px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="hd">
+    <div class="brand">ROOKIE <span>· vocab SRS</span></div>
+    <div class="spacer"></div>
+    <div class="tabs">
+      <button id="t-cram" class="on">Cram</button>
+      <button id="t-study">Study</button>
+      <button id="t-browse">Browse</button>
+      <button id="t-stats">Stats</button>
+    </div>
+  </div>
+  <div class="pbar"><i id="pbar"></i></div>
+</header>
+
+<div class="wrap">
+  <section id="v-cram"></section>
+  <section id="v-study" hidden></section>
+  <section id="v-browse" hidden></section>
+  <section id="v-stats" hidden></section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const VOCAB = [
+{w:"acquiesce",p:"ak-wee-ESS",pos:"v.",d:"to accept or agree to something without arguing, often unwillingly",e:"He gradually <u>acquiesced to</u> the unrelenting demands of the opposition.",m:"From Latin <i>acquiēscere</i> \"to become quiet.\" You're literally staying quiet while other people tell you what to do — agreeing without putting up any resistance.",src:"book"},
+{w:"averse",p:"uh-VURSS",pos:"adj.",d:"strongly disliking or opposed to something",e:"It's hard to get fit when you're <u>averse to</u> strenuous exercise.",m:"Latin <i>āvertere</i> = \"to turn away, avoid\" (ab- \"away\" + vertere \"to turn\"). Same root as avert and reverse — you turn your face away from it.",src:"book"},
+{w:"adverse",p:"AD-vurss / uhd-VURSS",pos:"adj.",d:"having a negative, unpleasant, or harmful effect on something",e:"The football match has been canceled because of <u>adverse conditions</u>.",m:"Same as <i>averse</i> except the ad- prefix intensifies it. Trouble telling them apart? The \"ad\" in adverse stands for \"added/additional\" — so it's extra opposed and wants to hurt you.",src:"book"},
+{w:"alleviate",p:"uh-LEE-vee-ayt",pos:"v.",d:"to make something bad (like pain or a problem) less severe; ease",e:"The medicine did little to <u>alleviate</u> her pain/suffering.",m:"Latin <i>alleviāre</i> \"to lighten a burden\" &lt; <i>levis</i> (light, not heavy) — same root as elevate and levitate. You're figuratively lifting a weight off someone.",src:"book"},
+{w:"ambivalent",p:"am-BIV-uh-luhnt",pos:"adj.",d:"having two opposing feelings at the same time; uncertain about how you feel",e:"I feel very <u>ambivalent about</u> leaving home to study abroad.",m:"<i>ambi-</i> (both sides) + <i>valēre</i> (to be strong) — whence valor, valiant, valid. You're having a tough time deciding b/c both choices seem equally strong or valid.",src:"book"},
+{w:"anomaly",p:"uh-NAH-muh-lee",pos:"n.",d:"somebody/something that is different from what is normal, expected, or satisfactory",e:"The tax code is full of loopholes and <u>anomalies</u>.",m:"Looks like \"abnormal-y\" → so it's <b>not normal</b>.",src:"book"},
+{w:"appreciate",p:"uh-PREE-shee-ayt",pos:"v.",d:"to increase in value over a period of time (opposite: depreciate)",e:"We wanted to buy property that's likely to <u>appreciate in value</u>.",m:"Latin <i>appretiāre</i> \"to set the price of\" &lt; <i>pretium</i> (price) — whence precious and praise. When you appreciate someone, you're recognizing their full price/worth.",src:"book"},
+{w:"apt",p:"apt",pos:"adj.",d:"suitable, appropriate, or just right for a particular situation; also likely or naturally tending to do something",e:"This song would've been more <u>apt for</u> someone with a deeper voice.",m:"Looks like it could be an abbreviation for \"<b>apt</b>ropriate.\" (And <i>inapt</i> = not apt — \"social media\" is a terribly inapt phrase considering it's anything but social.)",src:"book"},
+{w:"arbiter",p:"AR-buh-tuhr",pos:"n.",d:"somebody with the power to make judgments, settle arguments, or decide what gets accepted",e:"The magazine's writers were regarded as <u>arbiters of taste</u> in the literary world.",m:"Arbiter = the <b>arbi-TERMINATOR</b> of arguments. Think Judge Judy: whatever she says, that's the end of it.",src:"claude"},
+{w:"arbitrate",p:"AR-buh-trayt",pos:"v.",d:"to officially settle an argument or make a judgment in a disagreement between two groups, as a neutral third party",e:"An outside adviser has been brought in to <u>arbitrate the dispute between</u> the management and the union.",m:"Arbitrate is what an <i>arbiter</i> does for a living. Picture the ref in a boxing match stepping between two fighters — he's not on either side, he just ends it.",src:"claude"},
+{w:"assimilate",p:"uh-SIM-uh-layt",pos:"v.",d:"to absorb food/nutrients; to fully understand and take in new information; to become part of a group rather than remaining separate",e:"New arrivals shouldn't be expected to instantly <u>assimilate into</u> an alien culture.",m:"Latin <i>assimulāre</i> \"to make like; copy, imitate\" &lt; ad- (to) + similis (similar). Resistance is futile — the Borg assimilate you until you're just like them.",src:"book"},
+{w:"assume",p:"uh-SOOM",pos:"v.",d:"to take on power, responsibility, or control; to pretend to have a quality or appearance; to accept something is true without proof",e:"Terrorists <u>assumed control</u> of the plane and forced it to land in the desert.",m:"The classic: \"when you <b>assume</b> you make an <b>ass</b> out of <b>u</b> and <b>me</b>\" — check that something is actually true instead of automatically thinking it is.",src:"book"},
+{w:"astute",p:"uh-STOOT / uh-STYOOT",pos:"adj.",d:"very clever and quick at understanding what to do in a situation, esp. knowing how to take advantage of it; shrewd",e:"An <u>astute</u> reader will notice the errors in this essay.",m:"Sounds like \"<b>A-student</b>\" — an A-student is clever and knows how to work the system.",src:"book"},
+{w:"attuned",p:"uh-TOOND / uh-TYOOND",pos:"adj.",d:"familiar with somebody/something so that you're able to understand or recognize it",e:"Good doctors are highly <u>attuned to</u> the needs of their patients.",m:"From <i>tune</i>, as in \"tuning an instrument\" — you adjust the sound/pitch until it's exactly right.",src:"book"},
+{w:"austere",p:"aw-STEER",pos:"adj.",d:"very strict, serious, or unfriendly in appearance or behavior; also plain and without any luxuries",e:"The monks led <u>austere</u> lives, eating little and spending most of the day praying.",m:"Latin <i>austērus</i> (harsh, bitter, sour) &lt; Greek <i>austērós</i> — lit. \"making the tongue dry, without any sweetness.\" Think of a wine so dry it makes you wince.",src:"book"},
+{w:"bent",p:"bent",pos:"n.",d:"a natural inclination toward something — either a bias/belief or a talent or knack for it",e:"She has a scientific <u>bent</u>. // Teachers with a <u>religious bent</u> should not impose their beliefs upon students.",m:"Your mind is literally <b>bent</b> in that direction — like a tree that grew leaning toward the sun.",src:"book"},
+{w:"comprehend",p:"kahm-pruh-HEND",pos:"v.",d:"to understand something fully and completely",e:"The concept of infinity is difficult for the human mind to <u>comprehend</u>.",m:"To <i>com-</i>(fully)<i>-prehend</i>(grasp). If it's <b>incomprehensible</b>, your brain's hands can't get around it — like trying to explain the ending of <i>Tenet</i>.",src:"claude"},
+{w:"comprehensive",p:"kahm-pruh-HEN-siv",pos:"adj.",d:"complete and including everything involved or necessary; full",e:"We offer <u>fully comprehensive</u> training in all aspects of the business.",m:"Think of how \"reading <b>comprehension</b>\" involves fully understanding <i>everything</i> you're reading.",src:"book"},
+{w:"compromise",p:"KAHM-pruh-mighz",pos:"n./v.",d:"an agreement where each side gives up some of what they want; also (v.) to weaken your principles, or to put something at risk",e:"Alcohol and drug abuse can <u>compromise</u> your health and even your life.",m:"Latin <i>comprōmittere</i> \"to make a mutual promise\" — com- (with, together) + prōmittere (to promise). Both sides promise to give something up.",src:"book"},
+{w:"compromising",p:"KAHM-pruh-migh-zing",pos:"adj.",d:"reducing respect for somebody by revealing something wrong, embarrassing, or guilty that they were trying to keep secret",e:"Several <u>compromising photos</u> were leaked to the press.",m:"The exact word every celebrity publicist dreads. \"Caught in a <b>compromising position</b>\" is tabloid-speak for \"we all know what that was.\"",src:"claude"},
+{w:"conspicuous",p:"kuhn-SPIK-yoo-uhss",pos:"adj.",d:"very noticeable or attracting attention, often in a way that's not wanted",e:"Trying not to <u>look conspicuous</u>, he moved slowly along the back of the room.",m:"Latin <i>cōnspicere</i> (to observe, notice) &lt; com- (intensive) + <i>specere</i> (to look at) — whence spectator, spectacle, suspicious. A peacock fanning its tail is peak conspicuous.",src:"book"},
+{w:"constitute",p:"KAHN-stuh-toot / -tyoot",pos:"v.",d:"to form a group or government officially; to be the parts that make something up; to be considered equivalent to something",e:"Indonesians <u>constitute</u> the largest foreign population in Taiwan.",m:"Think of a country's <b>constitution</b> — it's formed by a group of people and it makes up all the rules of how the country is run.",src:"book"},
+{w:"contempt",p:"kuhn-TEMPT",pos:"n.",d:"a strong feeling of dislike and having no respect for somebody/something; also the crime of disobeying a court order",e:"Politicians seem to be generally <u>held in contempt</u> by the average person.",m:"Sounds like \"<b>condemn</b>\" and carries a similar idea — looking down on something and writing it off entirely.",src:"book"},
+{w:"conviction",p:"kuhn-VIK-shuhn",pos:"n.",d:"the official act of being found guilty of a crime; also a strong belief or total certainty",e:"He said he was enjoying his new job, but his voice <u>lacked conviction</u>.",m:"Latin <i>convincere</i> (to convince) &lt; com- (intensive) + <i>vincere</i> (to win, conquer) — whence victor and victory. Conviction is essentially \"convince-tion\": being totally convinced of something.",src:"book"},
+{w:"creed",p:"kreed",pos:"n.",d:"a set of beliefs or principles you live by",e:"Everyone is welcome regardless of race, color, or <u>creed</u>.",m:"From <i>crēdere</i> (to believe) — same root as credit and credible. Both Apollo Creed and the band Creed were built entirely on conviction and very little else.",src:"claude"},
+{w:"credulous",p:"KREJ-uh-luhss",pos:"adj.",d:"too willing to believe what you're told and thus easy to deceive; gullible",e:"Few people are <u>credulous</u> enough to believe such nonsense.",m:"Latin <i>crēdere</i> (to believe, trust in) whence <b>credit</b> — a credit card is called that b/c the company trusts you'll pay them back later. (And <b>incredulous</b> = refusing to believe it.)",src:"book"},
+{w:"decree",p:"di-KREE",pos:"n./v.",d:"an official order or statement, esp. one made by the ruler of a country; (v.) to order that something must happen",e:"After the devastating hurricane, the governor <u>decreed</u> a state of emergency.",m:"Latin <i>dēcernere</i> \"to decide, determine\" &lt; de- (off) + <i>cernere</i> (to distinguish, separate, sift) — whence certain, discern, secret. A decree is the ruler's decision, sifted down to one line.",src:"book"},
+{w:"denounce",p:"duh-NOWNS / dee-NOWNS",pos:"v.",d:"to publicly accuse somebody of being or doing something bad; to strongly and publicly criticize",e:"In times of terror, people often <u>denounced</u> their neighbors <u>to</u> the secret police.",m:"Latin <i>dēnūntiāre</i> \"to proclaim as cursed or evil\" — the de- prefix lets you know it's basically <b>announce, but for something bad</b>.",src:"book"},
+{w:"digress",p:"digh-GRESS",pos:"v.",d:"to move away from the main subject you're writing or talking about; go off on a tangent",e:"The lecturer briefly <u>digressed from</u> her subject to explain a related theory.",m:"Sounds like \"<b>die grass</b>\" — imagine a conversation with someone who goes so far off-topic, rambling about boring irrelevant stuff for so long, that the grass literally starts dying.",src:"book"},
+{w:"disclose",p:"duh-SKLOHZ",pos:"v.",d:"to show something that was hidden; to make something known publicly, esp. something previously secret; divulge",e:"He was accused of <u>disclosing</u> confidential material to a competing company.",m:"The dis- (opposite/reverse of) means that instead of <b>closing</b> a door you're opening it — revealing whatever was hidden behind it.",src:"book"},
+{w:"economical",p:"ek-uh-NAH-muh-kuhl / ee-kuh-NAH-muh-kuhl",pos:"adj.",d:"using money or resources carefully and efficiently; not wasteful; thrifty",e:"An <u>economical</u> cook knows how to transform leftovers into a new meal.",m:"When you think of the economy you think of the government — and everyone wants their government to <b>use money and resources carefully instead of wastefully</b>.",src:"book"},
+{w:"empirical",p:"uhm-PEER-uh-kuhl / em-PEER-uh-kuhl",pos:"adj.",d:"based on experiments or experience rather than on ideas or theory",e:"This theory needs to be backed up with solid <u>empirical data/evidence</u>.",m:"Looks like \"<b>empire</b>\" — if you want to properly rule an empire, you should do so based on actual observations of what's happening instead of just purely theoretical ideas.",src:"book"},
+{w:"equivocate",p:"uh-KWIV-uh-kayt / ee-KWIV-uh-kayt",pos:"v.",d:"to behave or speak in a way that's intentionally unclear or confusing in order to avoid or hide the truth",e:"She <u>equivocated</u> when asked whether she had known about the payments.",m:"<i>equi-</i> (equal) + <i>voc</i> (voice) — you give two equal voices at once so nobody can pin you down. Standard operating procedure for a politician on live TV.",src:"claude"},
+{w:"espouse",p:"uh-SPOWZ / es-POWZ",pos:"v.",d:"to give your support to or become attached to a belief, policy, cause, etc.",e:"Those who <u>espouse</u> unpopular views are often excluded.",m:"Same root as <b>spouse</b> — when you espouse an idea it's like you're marrying it. You're publicly committing.",src:"book"},
+{w:"exemplar",p:"ig-ZEMP-lar / eg-ZEM-pluhr",pos:"n.",d:"a good or typical example of something",e:"I've never regarded myself as an <u>exemplar of</u> virtue.",m:"Latin <i>exemplum</i> (a sample) whence <b>example</b>. An exemplar is the example so good they put it in the textbook.",src:"book"},
+{w:"exhaust",p:"ig-ZAWST",pos:"v.",d:"to use something up completely",e:"How long will it be before the world's fuel supplies are <u>exhausted</u>?",m:"When <i>you're</i> exhausted you've used up all your energy — but you can exhaust other things too: supplies, patience, a topic of conversation.",src:"book"},
+{w:"explicit",p:"ek-SPLISS-uht",pos:"adj.",d:"open, clear, exact, and easy to understand; also showing sex or violence in a very detailed way",e:"The report states <u>explicitly</u> that the system, not people, was to blame.",m:"Both explicit and implicit come from Latin <i>plicāre</i> (to fold) whence ply, plait, duplicate. Something explicit is lit. \"<b>folded out</b>\" and thus fully open.",src:"book"},
+{w:"implicit",p:"im-PLISS-uht",pos:"adj.",d:"suggested but not directly expressed or communicated; also felt or influencing you without your being aware of it",e:"Her comments were interpreted as an <u>implicit</u> criticism of the government.",m:"Implicit is \"<b>folded in</b>\" — so it's not directly seen. (Explicit = folded out and open.)",src:"book"},
+{w:"extraneous",p:"ik-STRAY-nee-uhss / ek-STRAY-nee-uhss",pos:"adj.",d:"not directly connected with or related to something; irrelevant",e:"All <u>extraneous</u> information has been removed from the report.",m:"Latin <i>extrā</i> (outside of, beyond) — it's the stuff sitting <b>outside</b> the thing you actually care about.",src:"book"},
+{w:"facility",p:"fuh-SIL-uh-tee",pos:"n.",d:"a natural ability to do or learn something easily or well; also a place or building where something is done",e:"Her <u>facility for</u> languages is astonishing.",m:"Latin <i>facilis</i> (easy to do) &lt; <i>facere</i> (to do, make) — whence facile, factory, feat, and the -fy suffix. If you have a facility for something, it comes <b>easy</b>.",src:"book"},
+{w:"facilitate",p:"fuh-SIL-uh-tayt",pos:"v.",d:"to make something (like an action or process) possible or easier",e:"The new trade agreement should <u>facilitate</u> more rapid economic growth.",m:"To facilitate is to make something <b>facile</b> (easy). A good facilitator does nothing except remove obstacles.",src:"book"},
+{w:"fallacy",p:"FAL-uh-see",pos:"n.",d:"an idea that a lot of people believe is true but is actually false",e:"It's a <u>fallacy</u> that longer working hours lead to more productivity.",m:"Latin <i>fallere</i> (to deceive) — a fallacy is a belief that everyone has <b>fallen</b> for.",src:"claude"},
+{w:"fallible",p:"FAL-uh-buhl",pos:"adj.",d:"able or likely to make mistakes or be wrong",e:"Perception is <u>fallible</u> — we place far too much faith in eyewitnesses.",m:"Same root <i>fallere</i> (to deceive). Humans are <b>fall</b>-ible: we fall for things. (Infallible = the Pope, allegedly.)",src:"claude"},
+{w:"flagrant",p:"FLAY-gruhnt",pos:"adj.",d:"(of an action) shocking b/c of being so obviously disrespectful; blatant",e:"She showed a <u>flagrant disregard</u> for anyone else's feelings.",m:"Latin <i>flagrāre</i> (to burn, blaze, glow) whence conflagration; from <i>in flagrante delicto</i> — \"while the crime is still blazing.\" In basketball a <b>flagrant foul</b> is excessive or violent contact — flagrant b/c it's so obviously and shockingly bad.",src:"book"},
+{w:"fleeting",p:"FLEE-ting",pos:"adj.",d:"lasting only a short time; passing swiftly; brief",e:"They caught a <u>fleeting glimpse</u> of the meteorite as it streaked across the night sky.",m:"If something <b>flees</b> (runs away) then it's only around for a short time before it's gone.",src:"book"},
+{w:"futile",p:"FYOO-duhl / FYOO-tighl",pos:"adj.",d:"having no purpose or effect b/c it won't succeed or achieve anything",e:"It's completely <u>futile</u> trying to reason with her — she just won't listen.",m:"Sounds like \"<b>few tile</b>\" — you want to tile your floor but you only have a few tiles, so the whole effort is pointless.",src:"book"},
+{w:"garner",p:"GAR-nuhr",pos:"v.",d:"to obtain or collect something, usually after much work or difficulty; gather",e:"The director <u>garnered</u> several prestigious awards for her latest film.",m:"Latin <i>grānārium</i> (a storehouse for grain; granary) &lt; <i>grānum</i> (grain) — you have to work hard, grain by grain, to fill a granary.",src:"book"},
+{w:"grave",p:"grayv",pos:"adj.",d:"seriously bad and important, giving you a reason to feel worried",e:"The police have expressed <u>grave concern</u> about the missing child.",m:"Think of grave as in a <b>graveyard</b> — it's all very serious stuff. (And the noun is <b>gravity</b>: \"I don't think you understand the gravity of the situation.\")",src:"book"},
+{w:"harbor",p:"HAR-buhr",pos:"v.",d:"to give shelter to somebody, esp. somebody hiding; to contain something (usu. bad) and let it develop; to keep feelings, esp. negative ones, in your mind for a long time",e:"He's been <u>harboring a grudge</u> against her ever since she got the promotion.",m:"Just a figurative extension of how a harbor literally provides shelter to and contains ships. (The movable bookcase that harbored Anne Frank is the image the book uses.)",src:"book"},
+{w:"imperative",p:"im-PAIR-uh-div / -tiv",pos:"adj.",d:"giving an authoritative command; also extremely important and urgent; vital",e:"It's <u>imperative to</u> act now before the problem gets worse.",m:"Cognate with <b>imperial</b> (basically the adjective form of empire) — an emperor's orders must be obeyed, no discussion.",src:"book"},
+{w:"inadvertent",p:"in-uhd-VUR-tuhnt",pos:"adj.",d:"done by accident; unintentional",e:"Remember to properly cite your sources to avoid <u>inadvertent</u> plagiarism.",m:"Latin <i>in-</i> (not) + <i>advertere</i> (to turn one's attention) — whence advertisement. If you didn't turn your attention to it, you did it by accident.",src:"book"},
+{w:"indifferent",p:"in-DIF-uhr-uhnt",pos:"adj.",d:"not very interested in or concerned about something; also not particularly good, mediocre",e:"The government seems largely <u>indifferent to</u> the suffering of its poorest citizens.",m:"If it makes no <b>difference</b> to you either way, you're in-different. The emotional equivalent of a shrug.",src:"claude"},
+{w:"indignant",p:"in-DIG-nuhnt",pos:"adj.",d:"angry and surprised b/c you think you've been treated wrongly or unfairly",e:"She was very <u>indignant at</u> the way she had been treated.",m:"Lit. \"<b>not worthy</b>\" — your <i>dignity</i> is your sense of pride, honor, and self-respect, so when something makes you indignant it's like your pride has been offended by this unworthy thing.",src:"book"},
+{w:"industry",p:"IN-duh-stree",pos:"n.",d:"working very hard on a regular basis",e:"No one doubted her ability, <u>industry</u>, or integrity.",m:"When you think of industry you think of factories like in the Industrial Revolution — so just think of how everyone in a factory is <b>working really hard all the time</b>.",src:"book"},
+{w:"inept",p:"in-EPT / uh-NEPT",pos:"adj.",d:"unskilled or ineffective; generally incompetent or foolish",e:"She's exceptionally intelligent but <u>socially inept</u>.",m:"Lit. \"<b>not apt</b>\" (not appropriate or suitable for a particular situation).",src:"book"},
+{w:"inhibit",p:"in-HIB-it",pos:"v.",d:"to prevent somebody from doing something, esp. by making them feel bad; to slow down a process or the growth of something",e:"Don't let fear of failure <u>inhibit</u> you <u>from</u> trying.",m:"Latin <i>inhibēre</i> \"to hold in, hold back\" &lt; in- (in) + <i>habēre</i> (to hold). Same root as habit — when you inhibit your habit it's like you're holding it back.",src:"book"},
+{w:"inhibition",p:"in-uh-BISH-uhn / in-huh-BISH-uhn",pos:"n.",d:"a shy, embarrassed, or nervous feeling that prevents you from expressing your true self or doing what you want",e:"After a couple of drinks he <u>lost his inhibition</u> and started socializing happily.",m:"The thing tequila is famous for deleting. Karaoke exists in the gap between having inhibitions and not.",src:"claude"},
+{w:"innate",p:"ih-NAYT",pos:"adj.",d:"(of a quality or ability) born with it, as opposed to learned; native, inborn",e:"Many children seem to have an <u>innate</u> sense of justice.",m:"Latin <i>innātus</i> = in- + <i>nātus</i> (born) — same root as nature, native, prenatal. It was <b>in</b> you at <b>birth</b>.",src:"book"},
+{w:"juxtaposition",p:"juhk-stuh-puh-ZISH-uhn",pos:"n.",d:"putting things that aren't similar next to each other, esp. to show contrast or a new relationship between them",e:"The <u>juxtaposition of</u> brutal reality and lyrical beauty runs through the story.",m:"Sounds like \"<b>just opposition</b>\" (or juxtapose ≈ \"just oppose\") — you're putting two opposing/different things together for effect. See: Dalí's <i>Lobster Telephone</i>.",src:"book"},
+{w:"lament",p:"luh-MENT",pos:"v.",d:"to have or express very sad feelings about something",e:"Old people often <u>lament</u> the passing of the good old days.",m:"A lament is what every Adele song technically is. Also see: the entire genre of country music.",src:"claude"},
+{w:"lamentable",p:"LAM-uhn-tuh-buhl / luh-MEN-tuh-buhl",pos:"adj.",d:"deserving severe criticism b/c it's very disappointing or unsatisfactory",e:"The <u>lamentable</u> state of the economy.",m:"Looks like \"<b>lame</b>\" — if something is lame then it's disappointing enough to complain about.",src:"book"},
+{w:"lethargic",p:"luh-THAR-jik",pos:"adj.",d:"having little energy or enthusiasm; sluggish",e:"A big meal always leaves me feeling <u>lethargic</u>.",m:"<b>Lethargy</b> sounds like \"<b>lacking energy</b>.\"",src:"book"},
+{w:"loft",p:"lawft / lahft",pos:"n./v.",d:"(UK) a space just below the roof used for storage, (US) attic; an apartment in the upper part of a large building; (v.) to hit or throw something high into the air",e:"Industrial <u>lofts</u> are ideal for singles who don't need separate rooms or divisions.",m:"A loft is a-<b>loft</b> — up high. Which is also why you can <i>loft</i> a home run into the stands.",src:"book"},
+{w:"lofty",p:"LAWF-tee",pos:"adj.",d:"thinking you're better than or superior to others (lit. higher than); also noble and admirable",e:"The boss showed a <u>lofty disdain for</u> his employees' suggestions.",m:"They're up in the <b>loft</b> looking down on everyone else. Lofty ideals, lofty nose.",src:"book"},
+{w:"lucre",p:"LOO-kuhr",pos:"n.",d:"money or profit, esp. when it's been obtained in a dishonest or immoral way",e:"It's shocking how heavily the hunger for fame and <u>lucre</u> has dominated the industry.",m:"Lucre sounds like \"<b>lucker</b>\" — if you're a lucker (a very lucky person) then you'll get lots of money. Usually appears as \"filthy lucre.\"",src:"book"},
+{w:"lucrative",p:"LOO-kruh-div / -tiv",pos:"adj.",d:"producing a large amount of money; making a large profit",e:"He gave up a <u>lucrative career</u> as a lawyer to spend more time with his family.",m:"Lucrative = \"<b>loot</b>-rative.\" Same root as lucre.",src:"book"},
+{w:"ludicrous",p:"LOO-duh-kruhss",pos:"adj.",d:"so stupid or unreasonable that you can't take it seriously; absurd",e:"The cost of an ambulance ride in America is completely <u>ludicrous</u>.",m:"Sounds like \"<b>ridiculous</b>\" — and Ludacris saying it out loud doesn't make it any less absurd.",src:"book"},
+{w:"malign",p:"muh-LIGHN",pos:"adj./v.",d:"(adj.) causing harm; evil in nature, influence, or effect; (v.) to say bad and false things about somebody publicly; slander",e:"Her supporters say she is being <u>unfairly maligned</u> in the press.",m:"The prefix <b>mal-</b> means \"bad,\" from Latin <i>malus</i>. Malice, malware, Maleficent — all bad news. (Opposite: <b>benign</b>.)",src:"book"},
+{w:"malignant",p:"muh-LIG-nuhnt",pos:"adj.",d:"having a strong desire to harm somebody; malevolent; (of a tumor) cancerous and likely to spread",e:"Fortunately, the doctor assured me the mole was completely <u>benign</u>.",m:"mal- = bad, so malignant = actively out to hurt you. <b>Benign</b> = \"be nice.\" Maleficent literally self-proclaims herself \"Mistress of All Evil.\"",src:"book"},
+{w:"minute",p:"migh-NOOT / migh-NYOOT",pos:"adj.",d:"extremely small; tiny; also extremely detailed and careful",e:"This equipment can detect even the <u>minutest</u> errors.",m:"Because one <b>minute</b> is a small portion of time. (Why not \"second\"? Second is short for <i>secunda pars minuta</i> — the second division of the hour by sixty.)",src:"book"},
+{w:"momentous",p:"moh-MEN-tuhss",pos:"adj.",d:"very important or serious, esp. b/c of effects on future events; historic",e:"My college graduation was a <u>momentous</u> day in my life.",m:"A portion of time worth remembering — a <b>moment</b> must be significant (like \"seize the moment\").",src:"book"},
+{w:"mundane",p:"muhn-DAYN / MUHN-dayn",pos:"adj.",d:"very ordinary and not interesting or exciting; dull",e:"Adults often fall into the <u>mundane</u> cycle of just eating, sleeping, and working.",m:"Sounds like \"<b>Monday</b>\" — Mondays are the most boring b/c that's when school/work starts again.",src:"book"},
+{w:"mutable",p:"MYOO-duh-buhl / -tuh-buhl",pos:"adj.",d:"able or likely to change",e:"All languages, and thus words and their definitions, are <u>mutable</u>.",m:"Basically just the adjective version of <b>mutate</b> — you learned all about mutations in science class. (Opposite: <b>immutable</b>.)",src:"book"},
+{w:"myriad",p:"MEER-ee-uhd",pos:"n./adj.",d:"an extremely large number of something",e:"Designs are available in a <u>myriad of</u> colors.",m:"Sounds like \"<b>merely add</b>\" — if you merely add over and over then you'll end up with a lot of something.",src:"book"},
+{w:"nausea",p:"NAW-zee-uh / NAW-zhuh",pos:"n.",d:"when your stomach feels ill and you think you're going to vomit",e:"The police officer felt a <u>wave of nausea</u> when he saw the bloody remains of the victim.",m:"Latin <i>nausea</i> (seasickness) &lt; Greek <i>naus</i> (boat) — whence nautical, nautilus, naval, navigate, navy, aeronautics, astronaut. Seasickness was the original nausea.",src:"book"},
+{w:"novel",p:"NAH-vuhl",pos:"adj.",d:"new and original, unlike anything else seen before",e:"Creative minds are needed to devise <u>novel</u> approaches to old problems.",m:"Latin <i>novus</i> (new) whence <b>novice</b> (and \"novel coronavirus\" — which was called that b/c it was a brand-new one).",src:"book"},
+{w:"noxious",p:"NAHK-shuhss",pos:"adj.",d:"poisonous, harmful, or very unpleasant",e:"Volcanoes spew <u>noxious fumes</u> that can cause death if inhaled too much.",m:"Sounds like \"<b>tox-ious</b>\" as in <b>toxic</b>, so it's poisonous/bad. Root: Latin <i>nocēre</i> (to injure, harm) — whence necrosis, innocuous, obnoxious, pernicious.",src:"book"},
+{w:"obnoxious",p:"uhb-NAHK-shuhss",pos:"adj.",d:"extremely unpleasant or rude, esp. in a way that's offensive",e:"When she's in a bad mood she becomes <u>obnoxious to</u> just about everyone.",m:"Think of the <b>ob-</b> prefix as intensifying the meaning of <i>noxious</i> — it's noxious, but as a personality.",src:"book"},
+{w:"innocuous",p:"ih-NOK-yoo-uhss / uh-NAH-kyuh-wuhss",pos:"adj.",d:"completely harmless",e:"Wild mushrooms that look <u>innocuous</u> can actually be incredibly poisonous.",m:"Latin <i>innocuus</i> (harmless; innocent) &lt; in- (not) + <i>nocēre</i> (to injure, harm). Not noxious — it can't hurt you.",src:"book"},
+{w:"obscure",p:"uhb-SKYOOR / ahb-SKYOOR",pos:"adj./v.",d:"difficult to see or understand; unclear; also not well known; (v.) to block from view",e:"He was briefly famous as a child actor but eventually <u>sank into obscurity</u>.",m:"Sounds like \"<b>ob-</b>\" + \"<b>clear</b>\" — <b>ob</b>stacles are <b>ob</b>structing something from being clear, so it's hard to see or know.",src:"book"},
+{w:"obsolete",p:"ahb-suh-LEET",pos:"adj.",d:"no longer used b/c it's been replaced by something newer or better; out of date",e:"Gas lamps became largely <u>obsolete</u> when electric lighting was invented.",m:"Sounds like \"<b>obv so late</b>\" — something is so obviously late (old) that it's out of date. See also <b>planned obsolescence</b>: your phone dying right after the warranty ends.",src:"book"},
+{w:"overt",p:"oh-VURT",pos:"adj.",d:"done in an open, public, or obvious way and not secret at all",e:"Though there was no <u>overt hostility</u> between them, you could tell they strongly disliked each other.",m:"Old French <i>ovrir</i> (to open) — it's the opposite of <b>covert</b>. Covert ops are secret; overt ops are on the six o'clock news.",src:"book"},
+{w:"pandemic",p:"pan-DEM-ik",pos:"n.",d:"a disease that spreads over a whole country or the whole world",e:"The 1918 flu <u>pandemic</u> infected nearly a third of the global population.",m:"Greek <i>pándēmos</i> (pertaining to all people) &lt; <b>pan-</b> (all, every) + <b>dēmos</b> (people) — whence democracy. Epidemic = upon the people; pandemic = <i>all</i> the people.",src:"book"},
+{w:"partisan",p:"PAR-duh-zuhn / -zan",pos:"adj.",d:"showing too much support for one side or idea, esp. without considering or judging it very carefully; one-sided",e:"He was considered too <u>partisan</u> to be a referee.",m:"Latin <i>partis</i> (part, piece, faction, political party) — you're only supporting <b>one part</b> of something. (Whence <b>non-partisan</b>: what a jury is supposed to be.)",src:"book"},
+{w:"pedestrian",p:"puh-DESS-tree-uhn",pos:"n./adj.",d:"a person walking in the street and not traveling in a vehicle; (adj.) without any imagination or excitement; uninteresting, boring",e:"He lived a <u>pedestrian</u> life that consisted only of working, eating, and sleeping.",m:"Latin <i>pedester</i> (on foot, as opposed to on horseback) &lt; <i>pedis</i> (foot) — whence expedite and impede. Walking is the un-fancy way to travel, hence \"boring.\"",src:"book"},
+{w:"pragmatic",p:"prag-MAT-ik",pos:"adj.",d:"solving problems in a practical and sensible way rather than based on theory or fixed rules; realistic",e:"Even though he knew he would've won the lawsuit, he made a <u>pragmatic</u> decision to just settle because it would have cost more to take it to court.",m:"Greek <i>prágma</i> (something done; act, deed) &lt; <i>prássein</i> (to do, act, perform) — pragmatic is about <b>actually doing something</b> instead of just thinking (which would be idealistic).",src:"book"},
+{w:"presume",p:"pree-ZOOM / pruh-ZOOM",pos:"v.",d:"to believe something to be true b/c it's very likely, even without actual proof; also to behave in a way that shows a lack of respect by doing something you know you don't have the right to do",e:"How can you <u>presume to</u> criticize me when you did the same thing yourself?",m:"Cognate with assume, from Latin <i>sūmere</i> (to take, obtain, buy) — the <b>pre-</b> lets you know it's like you're confidently assuming you already know something <b>before</b> you've even seen any evidence.",src:"book"},
+{w:"pretentious",p:"pri-TEN-shuhss",pos:"adj.",d:"pretending to be more important, intelligent, etc. (esp. in artsy ways) in order to impress others",e:"New and trendy coffee shops are often as <u>pretentious</u> as they are expensive.",m:"Pretentious is essentially the past participle form of <b>pretend</b>. If someone describes a natural wine as \"unruly but honest,\" that's the word.",src:"book"},
+{w:"provoke",p:"pruh-VOHK / proh-VOHK",pos:"v.",d:"to cause a particular reaction or effect, esp. a negative one; also to say or do something to make somebody annoyed or angry; goad",e:"The speaker's remarks <u>provoked</u> both tears and laughter.",m:"Latin <i>prōvocāre</i> (to call forth, summon, challenge) &lt; pro (forth) + <i>vocāre</i> (to call) — whence evocative. You're <b>purposely trying to get a reaction</b> out of the people you're calling out.",src:"book"},
+{w:"prudent",p:"PROO-duhnt",pos:"adj.",d:"careful and sensible; avoiding unnecessary risks",e:"People must suffer the consequences of their own <u>imprudence</u>.",m:"Sounds like \"<b>pro dent(ist)</b>\" — a professional dentist needs to be careful and avoid risks. (Opposite: <b>imprudent</b>.)",src:"book"},
+{w:"refute",p:"ruh-FYOOT / ree-FYOOT",pos:"v.",d:"to say or prove that something is wrong, false, or unfair",e:"This data can neither confirm nor <u>refute</u> the study's hypothesis.",m:"Sounds like \"<b>refuse</b>\" — when you refute something you refuse it b/c it's wrong. (And <b>irrefutable</b> evidence is evidence you can't argue with.)",src:"book"},
+{w:"renounce",p:"ruh-NOWNS / ree-NOWNS",pos:"v.",d:"to officially or publicly give something up, like a position, belief, or connection",e:"He <u>renounced</u> his citizenship to avoid paying taxes on his foreign income.",m:"The re- prefix here doesn't mean \"again\" but \"<b>against</b>\" (like in rebel and reclaim), so you can basically think of renounce as \"<b>announce against</b>.\"",src:"book"},
+{w:"repel",p:"ruh-PEL",pos:"v.",d:"to successfully fight off and drive away attackers; also to make somebody feel disgusted or horrified; repulse",e:"Tourists are often too <u>repelled</u> by the smell of stinky tofu to actually try it.",m:"Sounds like \"<b>rebel</b>\" — repelling something is like rebelling against it b/c you're trying to push/force it away. (Bug spray = insect repellent.)",src:"book"},
+{w:"reservation",p:"rez-uhr-VAY-shuhn",pos:"n.",d:"a feeling of doubt about a plan or idea; misgiving",e:"Despite her <u>initial reservations</u>, she came to love her new home.",m:"Think of a \"restaurant <b>reservation</b>\" — imagine being at the restaurant and having a lot of reservations (doubts) about the high prices and what to order.",src:"book"},
+{w:"sage",p:"sayj",pos:"adj./n.",d:"wise, esp. as a result of great experience; (n.) a very wise person",e:"The professor was highly respected for offering <u>sage advice</u> to students.",m:"A sage is basically Gandalf — old, bearded, has seen some things, only speaks in one-liners you understand three chapters later.",src:"claude"},
+{w:"sagacious",p:"suh-GAY-shuhss",pos:"adj.",d:"showing good judgment and understanding",e:"Her <u>sagacious</u> negotiating ability made her a valuable team leader.",m:"<b>Sage</b> + \"-acious\" — it's sage energy with an upgrade. (Noun: <b>sagacity</b>.)",src:"claude"},
+{w:"sanction",p:"SANK-shuhn",pos:"n./v.",d:"an official order (like limiting or stopping trade) taken against a country to make it obey international law; a punishment for disobeying; also official permission or approval",e:"Several countries, including the US, <u>imposed trade sanctions on</u> Russia following the 2022 invasion of Ukraine.",m:"Latin <i>sancīre</i> (to make holy) — sanction originally had to do with religious commands and laws, whence <b>saint</b> and <b>sacred</b>. Note the word is a contronym: it means both \"punish\" and \"approve.\"",src:"book"},
+{w:"scrutiny",p:"SKROO-tuhn-ee / SKROOT-n-ee",pos:"n.",d:"careful and detailed examination of something to get information about it; inspection",e:"Your arguments really don't <u>stand up to scrutiny</u>.",m:"Sounds like \"<b>screw tiny</b>\" — if you're trying to tighten a very tiny screw then you have to inspect it very carefully to line up your screwdriver correctly.",src:"book"},
+{w:"inscrutable",p:"in-SKROO-tuh-buhl",pos:"adj.",d:"(esp. of a person's expression) very difficult or impossible to understand",e:"The casino dealer looked at me <u>inscrutably</u>, betraying no indication of the strength of his hand.",m:"in- (not) + scrutable — you can't <i>scrutinize</i> your way in. The Mona Lisa's smile is the standard example.",src:"book"},
+{w:"simulate",p:"SIM-yuh-layt",pos:"v.",d:"to do or make something that seems real or similar to the real thing but isn't really",e:"This software <u>simulates</u> various road conditions for new drivers to practice with.",m:"Latin <i>simulāre</i> (to make like; imitate, copy, represent) &lt; <i>similis</i> (similar). <b>The Sims</b> is literally a life simulator — it looks like life, isn't life.",src:"book"},
+{w:"sober",p:"SOH-buhr",pos:"adj.",d:"not drunk or affected by alcohol; also serious, sensible, thoughtful, and calm",e:"Surviving a car accident can be a powerfully <u>sobering</u> experience.",m:"To distinguish <b>sober</b> from <b>somber</b>: sober = <b>so BEER</b>-free. Somber has the \"m\" for <b>gloomy</b>.",src:"claude"},
+{w:"somber",p:"SAHM-buhr",pos:"adj.",d:"dark or plain in color, shadowy, or dimly lit, esp. in a gloomy way; also sad and serious; melancholy",e:"The report painted a <u>somber</u> picture of the suffering in the war-torn region.",m:"To help distinguish between sober and somber, associate the \"<b>m</b>\" in so<b>m</b>ber with <b>gloomy</b>.",src:"book"},
+{w:"sound",p:"sownd",pos:"adj.",d:"not damaged or broken; in good condition; healthy — also detailed and complete and thus reliable; also based on good judgment; sensible or trustworthy",e:"My counselor gave me some very <u>sound advice</u> about college admissions.",m:"\"Safe and <b>sound</b>\" — nothing broken. Nothing to do with noise: this sound is from Old English <i>gesund</i>, which you may recognize from German <i>gesundheit</i>.",src:"book"},
+{w:"soundly",p:"SOWND-lee",pos:"adv.",d:"completely",e:"The committee <u>soundly</u> rejected all of the proposed changes.",m:"To be <b>soundly</b> defeated is to be defeated <i>completely</i> — and to sleep soundly is to sleep completely.",src:"book"},
+{w:"spectacle",p:"SPEK-tuh-kuhl",pos:"n.",d:"a public event, performance, or show that's impressive and exciting to watch; also a sight that attracts a lot of attention b/c it's unusual or surprising",e:"He made a complete <u>spectacle of himself</u> by arguing with the waiter.",m:"Latin <i>specere</i> (to look at) — the whole spect- family (spectator, inspect, suspect, spectacles) is about <b>looking</b>.",src:"book"},
+{w:"spectacles",p:"SPEK-tuh-kuhlz",pos:"n.",d:"glasses",e:"He folded his glasses and placed them in the <u>spectacle case</u>.",m:"The things you look <i>through</i>, at spectacles.",src:"book"},
+{w:"spectate",p:"spek-TAYT",pos:"v.",d:"to watch something, esp. a sports event, without participating in it",e:"Professional scouts were <u>spectating</u> the basketball game in search of talent.",m:"What <b>spectators</b> do. Also what you do at 3 a.m. watching an esports final in a time zone you don't live in.",src:"book"},
+{w:"stipulate",p:"STIP-yuh-layt",pos:"v.",d:"to state a rule that must be followed, or make a clear statement about something as part of an agreement",e:"We agreed to the deal <u>with the stipulation that</u> we pay nothing upfront.",m:"Sounds like \"<b>stop you late</b>\" — in order to stop workers from being late, the boss implemented several rules that must be followed.",src:"book"},
+{w:"strain",p:"strayn",pos:"v.",d:"to push hard against or pull hard on something; also to push or stretch something to its limit with heavy effort or pressure",e:"The sudden influx of tourists is <u>straining</u> hotels.",m:"Latin <i>stringere</i> (to draw tight or tie together) whence <b>stress</b> — so when you're straining something you're putting stress on it, physically and mentally.",src:"book"},
+{w:"restrain",p:"ruh-STRAYN / ree-STRAYN",pos:"v.",d:"to stop or limit the growth or force of something; to stop somebody from doing or feeling something, esp. by using force",e:"I was so angry that I could hardly <u>restrain</u> [control] <u>myself</u>.",m:"<b>re-</b> (back) + <b>strain</b> — you're pulling it back and holding it tight. (Noun: restraint.)",src:"book"},
+{w:"restrained",p:"ruh-STRAYND",pos:"adj.",d:"not too brightly colored or decorated; not excessive or extravagant",e:"The costumes and lighting in the play were tastefully <u>restrained</u>.",m:"The design version of \"quiet luxury\" — whoever made it had the option to go loud and chose not to.",src:"book"},
+{w:"superficial",p:"soo-puhr-FISH-uhl",pos:"adj.",d:"on the surface of something or only affecting the surface; also shallow in terms of lacking depth of character or understanding",e:"Too many people are concerned with <u>superficial</u> things like wealth and status.",m:"Sounds like \"<b>super facial</b>\" — somebody super fixated on their face and appearance is going to be very shallow instead of caring about cultivating who they are on the inside.",src:"book"},
+{w:"suppress",p:"suh-PRESS",pos:"v.",d:"to put an end to something by force; also to prevent something from working or from being expressed or known",e:"She was unable to <u>suppress</u> her giggling upon hearing the joke.",m:"Essentially <b>sub-</b> (below, under) + <b>press</b> → you're pressing down on something and holding it back.",src:"book"},
+{w:"susceptible",p:"suh-SEP-tuh-buhl",pos:"adj.",d:"capable of being affected by or undergoing something; easily influenced, affected, or harmed by something; impressionable",e:"The king was very <u>susceptible to</u> flattery, making him easily manipulated.",m:"Sounds like \"<b>sub-skeptical</b>\" — instead of being skeptical you're <i>below</i> skeptical, so you're more willing to accept or believe something and thus be influenced, affected, or harmed by it.",src:"book"},
+{w:"synthesis",p:"SIN-thuh-suhss",pos:"n.",d:"creating something by combining simpler things (as in a chemical reaction); also mixing or combining different things",e:"Her latest album is a <u>synthesis of</u> African and Latin rhythms.",m:"The Greek prefix <b>syn-</b> means \"together\" (whence synonym, symmetry, sympathy, symphony). Think of the \"thesis\" in synthesis as the thesis in your essay where you combine lots of things together to create something new.",src:"book"},
+{w:"temper",p:"TEM-puhr",pos:"v.",d:"to make something less strong or extreme by adding something that has the opposite effect; also to harden metal or chocolate by heating and then cooling it",e:"I learned to <u>temper</u> my criticism <u>with</u> patience and delicacy.",m:"Your <b>temper</b> is your state of mind, so it's important to keep it balanced so it's not too extreme — if somebody \"has a temper\" then they get angry easily, which means they'll blow up.",src:"book"},
+{w:"tentative",p:"TEN-tuh-div / -tiv",pos:"adj.",d:"(of a plan, idea, agreement) not definite, certain, or fully agreed upon; also cautious and not confident b/c of uncertainty or fear; hesitant",e:"After days of discussion, we managed to at least reach a <u>tentative agreement</u>.",m:"Sounds like \"<b>t-t-t-</b>\" — it's like somebody is stuttering because they're not certain or confident.",src:"book"},
+{w:"timid",p:"TIM-uhd",pos:"adj.",d:"shy and nervous; not brave or confident; easily frightened",e:"She's <u>timid about</u> swimming in water where you can't see the bottom.",m:"<b>Timon</b> from <i>The Lion King</i> — a meerkat who screams first and asks questions never.",src:"book"},
+{w:"trivia",p:"TRIV-ee-uh",pos:"n.",d:"unimportant or little-known details or information, esp. as used in a game",e:"He has an encyclopedic knowledge of basketball <u>trivia</u>.",m:"Pub-quiz energy. Trivia Crack facts are extremely fun and extremely useless — that's the definition.",src:"book"},
+{w:"trivial",p:"TRIV-ee-uhl",pos:"adj.",d:"not important, serious, or worth considering; having little value",e:"Why would she get so upset about something so <u>trivial</u>?",m:"<i>Trivial Pursuit</i>: a pursuit of things that do not matter. The name is doing the work for you.",src:"book"},
+{w:"trivialize",p:"TRIV-ee-uh-lighz",pos:"v.",d:"to make something seem less important, serious, or difficult than it really is",e:"It's important for parents not to <u>trivialize</u> their children's worries.",m:"To trivialize is to hit \"<b>skip intro</b>\" on somebody's feelings.",src:"book"},
+{w:"yield",p:"yeeld",pos:"v.",d:"to produce or provide something positive such as a profit, food, or result; to give up control or surrender; to stop resisting; (driving) to give way",e:"After a long siege, the town was forced to <u>yield</u>.",m:"The upside-down triangle road sign. <b>YIELD</b> = stop resisting, let the other guy go first.",src:"book"}
+];
+
+
+/* ---------- storage (localStorage w/ in-memory fallback) ---------- */
+const KEY='rookie-srs-v1';
+let memStore=null, canPersist=true;
+try{ localStorage.setItem('__t','1'); localStorage.removeItem('__t'); }catch(e){ canPersist=false; }
+function load(){
+  if(!canPersist) return memStore;
+  try{ const r=localStorage.getItem(KEY); return r?JSON.parse(r):null; }catch(e){ return null; }
+}
+function save(){
+  const data={v:1,cards:state.cards,cfg:state.cfg,log:state.log,cram:state.cram};
+  if(!canPersist){ memStore=data; return; }
+  try{ localStorage.setItem(KEY,JSON.stringify(data)); }catch(e){}
+}
+
+/* ---------- state ---------- */
+const DAY=86400000;
+function today(){ const d=new Date(); d.setHours(0,0,0,0); return d.getTime(); }
+function newCard(w){ return {w, s:'new', ef:2.5, ivl:0, reps:0, lapses:0, due:0, step:0, seen:0 }; }
+
+let state={cards:{},cfg:{newPerDay:12,maxReviews:200},log:{}};
+(function init(){
+  const s=load();
+  if(s){ state.cards=s.cards||{}; state.cfg=Object.assign(state.cfg,s.cfg||{}); state.log=s.log||{}; state.cram=s.cram||null; }
+  VOCAB.forEach(v=>{ if(!state.cards[v.w]) state.cards[v.w]=newCard(v.w); });
+  Object.keys(state.cards).forEach(k=>{ if(!VOCAB.find(v=>v.w===k)) delete state.cards[k]; });
+  save();
+})();
+const byWord = Object.fromEntries(VOCAB.map(v=>[v.w,v]));
+
+/* ---------- SM-2 ---------- */
+const LEARN_STEPS=[1,10];          // minutes
+const RELEARN_STEPS=[10];          // minutes
+const GRADED_EASY_BONUS=1.3;
+
+function introducedToday(){ return state.log[today()]?.intro||0; }
+function bump(field){ const t=today(); state.log[t]=state.log[t]||{intro:0,rev:0}; state.log[t][field]++; }
+
+function grade(card,g){        // g: 1 again, 2 hard, 3 good, 4 easy
+  const now=Date.now();
+  if(card.s==='new'){ card.s='learn'; card.step=0; bump('intro'); }
+  bump('rev'); card.seen++;
+
+  if(card.s==='learn'||card.s==='relearn'){
+    const steps = card.s==='learn'?LEARN_STEPS:RELEARN_STEPS;
+    if(g===1){ card.step=0; card.due=now+steps[0]*60000; }
+    else if(g===2){ card.due=now+Math.max(steps[card.step]||1,6)*60000; }
+    else if(g===3){
+      card.step++;
+      if(card.step>=steps.length){ graduate(card,1); }
+      else card.due=now+steps[card.step]*60000;
+    } else { graduate(card,4); }
+    return;
+  }
+  // review card
+  if(g===1){
+    card.lapses++; card.ef=Math.max(1.3,card.ef-0.2);
+    card.ivl=Math.max(1,Math.round(card.ivl*0.4));
+    card.s='relearn'; card.step=0; card.due=now+RELEARN_STEPS[0]*60000;
+    return;
+  }
+  card.reps++;
+  if(g===2){ card.ef=Math.max(1.3,card.ef-0.15); card.ivl=Math.max(1,Math.round(card.ivl*1.2)); }
+  else if(g===3){ card.ivl=Math.max(1,Math.round(card.ivl*card.ef)); }
+  else { card.ef=Math.min(3.2,card.ef+0.15); card.ivl=Math.max(1,Math.round(card.ivl*card.ef*GRADED_EASY_BONUS)); }
+  card.ivl=Math.min(card.ivl,365*3);
+  card.due=now+card.ivl*DAY;
+}
+function graduate(card,days){
+  card.s='review'; card.reps++; card.ivl=days;
+  card.due=Date.now()+days*DAY;
+}
+function previewIvl(card,g){
+  const c=JSON.parse(JSON.stringify(card));
+  const savedLog=JSON.stringify(state.log);
+  grade(c,g);
+  state.log=JSON.parse(savedLog);
+  const ms=c.due-Date.now();
+  if(ms<3600000) return Math.max(1,Math.round(ms/60000))+'m';
+  if(ms<DAY) return Math.round(ms/3600000)+'h';
+  const d=ms/DAY;
+  if(d<30) return Math.round(d)+'d';
+  if(d<365) return (d/30).toFixed(d<60?1:0).replace('.0','')+'mo';
+  return (d/365).toFixed(1).replace('.0','')+'y';
+}
+
+/* ---------- queue ---------- */
+function queue(){
+  const now=Date.now(), t=today();
+  const all=Object.values(state.cards);
+  const learn=all.filter(c=>(c.s==='learn'||c.s==='relearn')&&c.due<=now);
+  const rev=all.filter(c=>c.s==='review'&&c.due<=now).sort((a,b)=>a.due-b.due).slice(0,state.cfg.maxReviews);
+  const room=Math.max(0,state.cfg.newPerDay-introducedToday());
+  const fresh=all.filter(c=>c.s==='new').sort((a,b)=>VOCAB.findIndex(v=>v.w===a.w)-VOCAB.findIndex(v=>v.w===b.w)).slice(0,room);
+  return {learn,rev,fresh};
+}
+const LEARN_AHEAD=20*60000;   // like Anki: pull learning cards up to 20 min early rather than idling
+function pick(){
+  const q=queue();
+  if(q.learn.length) return q.learn.sort((a,b)=>a.due-b.due)[0];
+  const pool=[];
+  q.rev.forEach(c=>pool.push(c)); q.fresh.forEach(c=>pool.push(c));
+  if(!pool.length){
+    const soon=Object.values(state.cards).filter(c=>c.s==='learn'||c.s==='relearn').sort((a,b)=>a.due-b.due)[0];
+    if(soon && soon.due-Date.now()<=LEARN_AHEAD) return soon;
+    return soon?{__wait:soon}:null;
+  }
+  // interleave: prefer reviews but sprinkle new
+  if(q.rev.length && (!q.fresh.length || Math.random()<0.65)) return q.rev[0];
+  return q.fresh[0];
+}
+
+/* ---------- UI ---------- */
+const $=s=>document.querySelector(s);
+let cur=null, shown=false, tab='study';
+function esc(s){ return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('on'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('on'),1900); }
+
+function renderStudy(){
+  const q=queue();
+  const el=$('#v-study');
+  const total=VOCAB.length;
+  const doneCards=Object.values(state.cards).filter(c=>c.s==='review').length;
+  $('#pbar').style.width=(doneCards/total*100)+'%';
+
+  if(!cur) cur=pick();
+
+  const head=`<div class="counts">
+    <div class="cnt n"><b>${q.fresh.length}</b><span>new</span></div>
+    <div class="cnt l"><b>${q.learn.length}</b><span>learning</span></div>
+    <div class="cnt r"><b>${q.rev.length}</b><span>due</span></div>
+  </div>`;
+
+  if(!cur || cur.__wait){
+    let msg='Nothing due right now.';
+    if(cur&&cur.__wait){
+      const mins=Math.max(1,Math.round((cur.__wait.due-Date.now())/60000));
+      msg=`Next learning card in about ${mins} minute${mins>1?'s':''}.`;
+    }else{
+      const nextRev=Object.values(state.cards).filter(c=>c.s==='review').sort((a,b)=>a.due-b.due)[0];
+      if(nextRev){ const d=Math.max(1,Math.ceil((nextRev.due-Date.now())/DAY)); msg=`All caught up. Next review in ${d} day${d>1?'s':''}.`; }
+      const anyNew=Object.values(state.cards).some(c=>c.s==='new');
+      if(anyNew && introducedToday()>=state.cfg.newPerDay) msg+=` You've hit today's new-card limit (${state.cfg.newPerDay}).`;
+    }
+    el.innerHTML=head+`<div class="done"><h2>&#10003; Done for now</h2><p>${esc(msg)}</p>
+      <button class="btn p" id="more">Study ahead anyway</button></div>`;
+    $('#more').onclick=()=>{
+      const c=Object.values(state.cards).filter(x=>x.s!=='new').sort((a,b)=>a.due-b.due)[0]
+           || Object.values(state.cards).find(x=>x.s==='new');
+      if(c){ cur=c; shown=false; renderStudy(); } else toast('No cards available.');
+    };
+    return;
+  }
+
+  const v=byWord[cur.w];
+  const st=cur.s==='new'?'<span class="chip new">new</span>':cur.s==='review'?`<span class="chip rev">${cur.ivl}d interval</span>`:'<span class="chip lrn">learning</span>';
+
+  if(!shown){
+    el.innerHTML=head+`<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div><div class="term">${esc(v.w)}</div></div>${st}
+      </div>
+      <div class="hint">What does it mean?</div>
+      <button class="reveal" id="rev">Show answer &nbsp;<span style="color:var(--tx3);font-weight:400">Space</span></button>
+    </div>`;
+    $('#rev').onclick=()=>{shown=true;renderStudy();};
+  }else{
+    el.innerHTML=head+`<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div><div class="term">${esc(v.w)}</div><div class="pron">${esc(v.p)}</div></div>${st}
+      </div>
+      <div class="sec"><div class="lbl">Definition</div>
+        <div class="def"><span class="pos">${esc(v.pos)}</span>${v.d}</div></div>
+      <div class="sec"><div class="lbl">Example</div><div class="ex">${v.e}</div></div>
+      <div class="sec"><div class="lbl">Memory hook</div>
+        <div class="mn"><span class="tag">${v.src==='book'?'from the book':'mnemonic'}</span>${v.m}</div></div>
+      <div class="grades">
+        <button class="g g1" data-g="1"><span class="k">Again</span><span class="t">${previewIvl(cur,1)}</span></button>
+        <button class="g g2" data-g="2"><span class="k">Hard</span><span class="t">${previewIvl(cur,2)}</span></button>
+        <button class="g g3" data-g="3"><span class="k">Good</span><span class="t">${previewIvl(cur,3)}</span></button>
+        <button class="g g4" data-g="4"><span class="k">Easy</span><span class="t">${previewIvl(cur,4)}</span></button>
+      </div>
+    </div>`;
+    el.querySelectorAll('.g').forEach(b=>b.onclick=()=>answer(+b.dataset.g));
+  }
+}
+function answer(g){
+  if(!cur||cur.__wait)return;
+  grade(cur,g); save(); cur=null; shown=false; renderStudy();
+}
+
+/* ---------- CRAM MODE ----------
+   No spaced repetition. Pure drilling: a word is retired from the batch only
+   after you get it right twice in a row. Misses come back ~2 cards later,
+   hits you're not sure of come back ~6 cards later. Nothing here touches the
+   SRS schedule. */
+const MASTERY=2, REQUEUE_MISS=2, REQUEUE_HIT=6;
+let cramShown=false;
+function cramDefault(){ return {on:false,dir:'w2m',batch:20,order:[],start:0,queue:[],streak:{},miss:{},retired:[]}; }
+if(!state.cram) state.cram=cramDefault();
+else{ // drop any words that no longer exist in the deck
+  const c=state.cram, ok=w=>!!byWord[w];
+  c.order=(c.order||[]).filter(ok); c.queue=(c.queue||[]).filter(ok); c.retired=(c.retired||[]).filter(ok);
+  c.streak=c.streak||{}; c.miss=c.miss||{};
+  if(c.on&&!c.order.length) state.cram=cramDefault();
+}
+
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function cramBegin(){
+  const c=state.cram;
+  c.order=shuffle(VOCAB.map(v=>v.w));
+  c.start=0; c.on=true;
+  cramLoadBatch();
+}
+function cramLoadBatch(){
+  const c=state.cram;
+  const size=c.batch==='all'?c.order.length:c.batch;
+  const pool=c.order.slice(c.start,c.start+size);
+  c.queue=shuffle(pool); c.streak={}; c.miss={}; c.retired=[];
+  cramShown=false;
+}
+function cramAnswer(ok){
+  const c=state.cram, w=c.queue.shift();
+  if(w===undefined) return;
+  if(ok){
+    c.streak[w]=(c.streak[w]||0)+1;
+    if(c.streak[w]>=MASTERY){ c.retired.push(w); }
+    else { c.queue.splice(Math.min(c.queue.length,REQUEUE_HIT),0,w); }
+  }else{
+    c.streak[w]=0; c.miss[w]=(c.miss[w]||0)+1;
+    c.queue.splice(Math.min(c.queue.length,REQUEUE_MISS),0,w);
+  }
+  cramShown=false; save(); renderCram();
+}
+function cramBatchSize(){ const c=state.cram; return c.batch==='all'?c.order.length:Math.min(c.batch,c.order.length-c.start); }
+
+function renderCram(){
+  const el=$('#v-cram'), c=state.cram;
+
+  if(!c.on){
+    const sizes=[[15,'15'],[20,'20'],[30,'30'],['all','All 122']];
+    el.innerHTML=`<div class="setup">
+      <h2>Cram session</h2>
+      <p>Drills words in batches until you get each one right twice in a row. Ignores the spaced-repetition schedule entirely — use this when you need the words in your head <i>today</i>.</p>
+      <div class="fld"><div class="lbl">Batch size</div><div class="opt" id="o-batch">
+        ${sizes.map(([v,l])=>`<button data-v="${v}" class="${String(c.batch)===String(v)?'on':''}">${l}</button>`).join('')}
+      </div><div class="note">Batches of 15–30 are far more effective than one 122-word marathon: you cycle back to a word while it's still fresh.</div></div>
+      <div class="fld"><div class="lbl">Direction</div><div class="opt" id="o-dir">
+        <button data-v="w2m" class="${c.dir==='w2m'?'on':''}">Word &rarr; meaning</button>
+        <button data-v="m2w" class="${c.dir==='m2w'?'on':''}">Meaning &rarr; word</button>
+      </div><div class="note">Meaning &rarr; word is harder and is what you want if you plan to <i>use</i> these words, not just recognize them.</div></div>
+      <button class="btn p" id="go" style="margin-top:22px;width:100%;padding:14px">Start drilling</button>
+    </div>`;
+    el.querySelectorAll('#o-batch button').forEach(b=>b.onclick=()=>{c.batch=b.dataset.v==='all'?'all':+b.dataset.v;save();renderCram();});
+    el.querySelectorAll('#o-dir button').forEach(b=>b.onclick=()=>{c.dir=b.dataset.v;save();renderCram();});
+    $('#go').onclick=()=>{cramBegin();save();renderCram();};
+    return;
+  }
+
+  const size=cramBatchSize();
+  const batchNo=Math.floor(c.start/(c.batch==='all'?c.order.length:c.batch))+1;
+  const batchTotal=c.batch==='all'?1:Math.ceil(c.order.length/c.batch);
+  $('#pbar').style.width=((c.start+c.retired.length)/c.order.length*100)+'%';
+
+  // batch finished
+  if(!c.queue.length){
+    const missed=Object.keys(c.miss).filter(w=>c.miss[w]>0).sort((a,b)=>c.miss[b]-c.miss[a]);
+    const more=c.start+size<c.order.length;
+    el.innerHTML=`<div class="done">
+      <h2>&#10003; Batch ${batchNo} done</h2>
+      <p>${size} words mastered${missed.length?` &middot; ${missed.length} needed extra tries`:' &middot; clean run'}.
+      ${more?`${c.order.length-c.start-size} words left overall.`:'That was the last batch.'}</p>
+      ${missed.length?`<div class="misslist" style="justify-content:center;max-width:560px;margin:0 auto 22px">${missed.slice(0,20).map(w=>`<span>${esc(w)}</span>`).join('')}</div>`:''}
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        ${more?'<button class="btn p" id="next">Next batch</button>':''}
+        ${missed.length?'<button class="btn" id="redo">Redo the shaky ones</button>':''}
+        <button class="btn" id="quit">End session</button>
+      </div></div>`;
+    if(more)$('#next').onclick=()=>{c.start+=size;cramLoadBatch();save();renderCram();};
+    if(missed.length)$('#redo').onclick=()=>{c.queue=shuffle(missed);c.streak={};c.retired=[];cramShown=false;save();renderCram();};
+    $('#quit').onclick=()=>{state.cram=cramDefault();state.cram.batch=c.batch;state.cram.dir=c.dir;save();renderCram();};
+    return;
+  }
+
+  const w=c.queue[0], v=byWord[w], done=c.retired.length;
+  const head=`<div class="cramtop">
+      <span>Batch ${batchNo}${batchTotal>1?'/'+batchTotal:''}</span>
+      <div class="track"><i style="width:${done/size*100}%"></i></div>
+      <span><b>${done}</b>/${size} locked in</span>
+    </div>`;
+  const dots=`<div class="streaks">${Array.from({length:MASTERY},(_,i)=>`<div class="dot${(c.streak[w]||0)>i?' on':''}"></div>`).join('')}</div>`;
+
+  if(!cramShown){
+    const front = c.dir==='w2m'
+      ? `<div class="ask">What does it mean?</div><div class="term">${esc(v.w)}</div><div class="pron">${esc(v.p)}</div>`
+      : `<div class="ask">Which word is this?</div><div class="q-def"><span class="pos">${esc(v.pos)}</span>${v.d}</div>`;
+    el.innerHTML=head+`<div class="card">${front}${dots}
+      <button class="reveal" id="crev">Show answer &nbsp;<span style="color:var(--tx3);font-weight:400">Space</span></button></div>`;
+    $('#crev').onclick=()=>{cramShown=true;renderCram();};
+  }else{
+    el.innerHTML=head+`<div class="card">
+      <div class="term">${esc(v.w)}</div><div class="pron">${esc(v.p)}</div>${dots}
+      <div class="sec"><div class="lbl">Definition</div><div class="def"><span class="pos">${esc(v.pos)}</span>${v.d}</div></div>
+      <div class="sec"><div class="lbl">Example</div><div class="ex">${v.e}</div></div>
+      <div class="sec"><div class="lbl">Memory hook</div><div class="mn"><span class="tag">${v.src==='book'?'from the book':'mnemonic'}</span>${v.m}</div></div>
+      <div class="two">
+        <button class="no" id="cno">Missed it<small>comes back in 2 cards &middot; 1</small></button>
+        <button class="yes" id="cyes">Got it<small>${(c.streak[w]||0)+1>=MASTERY?'locks in':'once more to lock in'} &middot; 2</small></button>
+      </div></div>`;
+    $('#cno').onclick=()=>cramAnswer(false);
+    $('#cyes').onclick=()=>cramAnswer(true);
+  }
+}
+
+/* ---------- browse ---------- */
+let openWord=null;
+function renderBrowse(){
+  const el=$('#v-browse');
+  const q=(el.dataset.q||'').toLowerCase();
+  const f=el.dataset.f||'all';
+  const list=VOCAB.filter(v=>{
+    const c=state.cards[v.w];
+    if(f!=='all'&&c.s!==f) return false;
+    if(!q) return true;
+    return (v.w+' '+v.d+' '+v.e+' '+v.m).toLowerCase().includes(q);
+  });
+  el.innerHTML=`<div class="tools">
+      <input type="search" id="q" placeholder="Search 122 words, definitions, mnemonics…" value="${esc(el.dataset.q||'')}">
+      <select id="f">
+        <option value="all">All (${VOCAB.length})</option>
+        <option value="new">New</option><option value="learn">Learning</option>
+        <option value="relearn">Relearning</option><option value="review">Review</option>
+      </select>
+    </div>
+    <div id="rows"></div>`;
+  $('#f').value=f;
+  const rows=$('#rows');
+  rows.innerHTML = list.length?list.map(v=>{
+    const c=state.cards[v.w];
+    const chip=c.s==='new'?'<span class="chip new">new</span>':c.s==='review'?`<span class="chip rev">${c.ivl}d</span>`:`<span class="chip lrn">${c.s}</span>`;
+    const open=openWord===v.w;
+    return `<div class="row" data-w="${esc(v.w)}"><div class="w">${esc(v.w)}<small>${esc(v.d)}</small></div>${chip}</div>`+
+      (open?`<div class="detail">
+        <div class="pron" style="margin:8px 0 12px">${esc(v.p)}</div>
+        <div class="def" style="font-size:16px"><span class="pos">${esc(v.pos)}</span>${v.d}</div>
+        <div class="sec"><div class="lbl">Example</div><div class="ex" style="font-size:15px">${v.e}</div></div>
+        <div class="sec"><div class="lbl">Memory hook</div><div class="mn" style="font-size:14px"><span class="tag">${v.src==='book'?'from the book':'mnemonic'}</span>${v.m}</div></div>
+        <div class="note">reps ${c.seen} · lapses ${c.lapses} · ease ${c.ef.toFixed(2)}${c.s==='review'?' · due '+new Date(c.due).toLocaleDateString():''}</div>
+      </div>`:'');
+  }).join(''):'<div class="note">No matches.</div>';
+  $('#q').oninput=e=>{el.dataset.q=e.target.value;const p=e.target.selectionStart;renderBrowse();const i=$('#q');i.focus();i.setSelectionRange(p,p);};
+  $('#f').onchange=e=>{el.dataset.f=e.target.value;renderBrowse();};
+  rows.querySelectorAll('.row').forEach(r=>r.onclick=()=>{openWord=openWord===r.dataset.w?null:r.dataset.w;renderBrowse();});
+}
+
+/* ---------- stats ---------- */
+function renderStats(){
+  const all=Object.values(state.cards);
+  const n=s=>all.filter(c=>c.s===s).length;
+  const mature=all.filter(c=>c.s==='review'&&c.ivl>=21).length;
+  const seen=all.filter(c=>c.s!=='new').length;
+  const acc=(()=>{const t=all.reduce((a,c)=>a+c.seen,0),l=all.reduce((a,c)=>a+c.lapses,0);return t?Math.round((1-l/t)*100):100;})();
+  // forecast next 14 days
+  const t0=today(); const buckets=Array(14).fill(0);
+  all.forEach(c=>{ if(c.s!=='review')return; const d=Math.floor((c.due-t0)/DAY); if(d>=0&&d<14)buckets[d]++; else if(d<0)buckets[0]++; });
+  const mx=Math.max(1,...buckets);
+  $('#v-stats').innerHTML=`
+    <div class="grid">
+      <div class="tile"><div class="v">${seen}<span style="font-size:15px;color:var(--tx3)">/${all.length}</span></div><div class="l">words started</div></div>
+      <div class="tile"><div class="v" style="color:var(--good)">${mature}</div><div class="l">mature (21d+)</div></div>
+      <div class="tile"><div class="v">${acc}%</div><div class="l">retention</div></div>
+      <div class="tile"><div class="v">${state.log[t0]?.rev||0}</div><div class="l">reviewed today</div></div>
+    </div>
+    <h3>Reviews due, next 14 days</h3>
+    ${buckets.some(b=>b>0)
+      ? `<div class="bars">${buckets.map((b,i)=>`<div><div class="n">${b||''}</div><div class="bar${b?'':' z'}" style="height:${b/mx*74}px"></div><div class="cap">${i===0?'now':i}</div></div>`).join('')}</div>`
+      : `<div class="note" style="background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:12px">Nothing scheduled yet — words appear here once they graduate out of the learning steps and get a real interval.</div>`}
+    <h3>Breakdown</h3>
+    <div class="grid">
+      <div class="tile"><div class="v" style="color:var(--acc)">${n('new')}</div><div class="l">new</div></div>
+      <div class="tile"><div class="v" style="color:var(--hard)">${n('learn')+n('relearn')}</div><div class="l">learning</div></div>
+      <div class="tile"><div class="v" style="color:var(--good)">${n('review')}</div><div class="l">in review</div></div>
+    </div>
+    <h3>Settings</h3>
+    <div class="setrow">New words per day <div class="spacer" style="flex:1"></div><input type="number" id="npd" min="1" max="60" value="${state.cfg.newPerDay}"></div>
+    <div class="setrow">Max reviews per day <div class="spacer" style="flex:1"></div><input type="number" id="mrd" min="10" max="500" value="${state.cfg.maxReviews}"></div>
+    <div class="setrow" style="border:none;gap:8px;flex-wrap:wrap">
+      <button class="btn" id="exp">Export progress</button>
+      <button class="btn" id="imp">Import progress</button>
+      <button class="btn" id="rst">Reset all</button>
+    </div>
+    <div class="note">${canPersist
+      ? 'Progress is saved automatically in this browser. Export a backup if you plan to switch devices.'
+      : '<span class="warn">Heads up:</span> this browser is blocking local storage, so progress will only last for this session. Open the downloaded file directly and it will save normally — or use Export before you close the tab.'}
+      <br><br><b>Cram</b> is for tonight: it drills a batch until each word comes back right twice in a row and ignores all scheduling.
+      <br><br><b>Study</b> is for keeping the words long-term. Scheduling is SM-2 (the Anki algorithm) and the times on the buttons are when that word comes back: <b>Again</b> ≈1 min, <b>Hard</b> ≈6 min, <b>Good</b> ≈10 min, <b>Easy</b> skips the learning steps and pushes the word out 4 days. Once a word graduates, each <b>Good</b> multiplies its interval by the card's ease factor (4d → 10d → 25d…), <b>Hard</b> grows it slowly, and <b>Again</b> sends it back to relearning.</div>`;
+  $('#npd').onchange=e=>{state.cfg.newPerDay=Math.max(1,+e.target.value||12);save();toast('Saved');};
+  $('#mrd').onchange=e=>{state.cfg.maxReviews=Math.max(10,+e.target.value||200);save();toast('Saved');};
+  $('#exp').onclick=()=>{
+    const blob=new Blob([JSON.stringify({v:1,cards:state.cards,cfg:state.cfg,log:state.log},null,2)],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download='rookie-srs-progress.json';a.click();URL.revokeObjectURL(a.href);
+  };
+  $('#imp').onclick=()=>{
+    const i=document.createElement('input');i.type='file';i.accept='.json,application/json';
+    i.onchange=()=>{const f=i.files[0];if(!f)return;const r=new FileReader();
+      r.onload=()=>{try{const d=JSON.parse(r.result);
+        if(d.cards){state.cards=d.cards;state.cfg=Object.assign(state.cfg,d.cfg||{});state.log=d.log||{};
+        VOCAB.forEach(v=>{if(!state.cards[v.w])state.cards[v.w]=newCard(v.w);});
+        save();cur=null;shown=false;go(tab);toast('Progress imported');}
+        else toast('That file has no card data.');}catch(e){toast('Could not read that file.');}};
+      r.readAsText(f);};
+    i.click();
+  };
+  $('#rst').onclick=()=>{
+    if(!confirm('Reset all scheduling for all 122 words? This cannot be undone.'))return;
+    state.cards={};state.log={};VOCAB.forEach(v=>state.cards[v.w]=newCard(v.w));
+    save();cur=null;shown=false;go('study');toast('Deck reset');
+  };
+}
+
+/* ---------- nav ---------- */
+function go(t){
+  tab=t;
+  ['cram','study','browse','stats'].forEach(x=>{
+    $('#v-'+x).hidden=(x!==t);
+    $('#t-'+x).classList.toggle('on',x===t);
+  });
+  if(t==='cram')renderCram();
+  else if(t==='study')renderStudy();
+  else if(t==='browse')renderBrowse();
+  else renderStats();
+}
+$('#t-cram').onclick=()=>go('cram');
+$('#t-study').onclick=()=>go('study');
+$('#t-browse').onclick=()=>go('browse');
+$('#t-stats').onclick=()=>go('stats');
+
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;
+  if(tab==='cram'){
+    if(!state.cram.on||!state.cram.queue.length)return;
+    if(e.code==='Space'||e.key==='Enter'){ e.preventDefault(); if(!cramShown){cramShown=true;renderCram();} else cramAnswer(true); }
+    else if(cramShown&&(e.key==='1')){ e.preventDefault(); cramAnswer(false); }
+    else if(cramShown&&(e.key==='2')){ e.preventDefault(); cramAnswer(true); }
+    return;
+  }
+  if(tab!=='study')return;
+  if(e.code==='Space'||e.key==='Enter'){ e.preventDefault(); if(!shown&&cur&&!cur.__wait){shown=true;renderStudy();} else if(shown) answer(3); }
+  else if(shown&&['1','2','3','4'].includes(e.key)){ e.preventDefault(); answer(+e.key); }
+});
+
+go('cram');
+setInterval(()=>{ if(tab==='study'&&(!cur||cur.__wait)) {cur=null;renderStudy();} },30000);
+</script>
+</body>
+</html>
