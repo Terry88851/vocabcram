@@ -127,13 +127,15 @@ h3{font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--tx3)
 .cramtop .track{flex:1;height:7px;background:var(--bg3);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
 .cramtop .track>i{display:block;height:100%;background:linear-gradient(90deg,var(--good),#5aa9e6);width:0;transition:width .3s}
 .cramtop b{color:var(--tx);font-variant-numeric:tabular-nums}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
-.two button{padding:15px 8px;border-radius:12px;border:1px solid var(--line);background:var(--bg3);font-weight:650;font-size:15px;transition:.15s}
-.two .no{border-color:rgba(242,99,126,.45);color:var(--again)}
-.two .no:hover{background:rgba(242,99,126,.12)}
-.two .yes{border-color:rgba(75,191,138,.45);color:var(--good)}
-.two .yes:hover{background:rgba(75,191,138,.12)}
-.two small{display:block;font-weight:400;font-size:11px;color:var(--tx3);margin-top:3px}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:20px}
+.three button{padding:14px 4px;border-radius:12px;border:1px solid var(--line);background:var(--bg3);font-weight:650;font-size:15px;transition:.15s}
+.three .no{border-color:rgba(242,99,126,.45);color:var(--again)}
+.three .no:hover{background:rgba(242,99,126,.12)}
+.three .mid{border-color:rgba(232,163,61,.45);color:var(--hard)}
+.three .mid:hover{background:rgba(232,163,61,.12)}
+.three .yes{border-color:rgba(75,191,138,.45);color:var(--good)}
+.three .yes:hover{background:rgba(75,191,138,.12)}
+.three small{display:block;font-weight:400;font-size:11px;color:var(--tx3);margin-top:3px;line-height:1.35}
 .ask{font-size:13px;color:var(--tx3);letter-spacing:.03em;text-transform:uppercase;font-weight:600;margin-bottom:14px}
 .q-def{font-size:26px;line-height:1.4;font-weight:500}
 .streaks{display:flex;gap:6px;margin-top:14px}
@@ -141,6 +143,19 @@ h3{font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--tx3)
 .dot.on{background:var(--good);border-color:var(--good)}
 .misslist{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
 .misslist span{font-size:13px;padding:3px 10px;border-radius:8px;background:var(--bg3);border:1px solid var(--line)}
+
+/* match */
+.mgrid{display:grid;grid-template-columns:minmax(104px,0.4fr) 1fr;gap:8px;margin-top:16px;align-items:stretch}
+.mcol{display:flex;flex-direction:column;gap:8px}
+.mcol.words .mcell{flex:1}
+.mcell{text-align:left;padding:12px 13px;border:1px solid var(--line);background:var(--bg2);border-radius:11px;font-size:14px;line-height:1.45;min-height:56px;display:flex;align-items:center;flex-wrap:wrap;transition:.13s}
+.mcell b{font-size:16px;font-weight:650}
+.mcell:hover:not(:disabled){border-color:#3a4450;background:var(--bg3)}
+.mcell.sel{border-color:var(--acc);background:rgba(106,169,255,.13);box-shadow:0 0 0 1px var(--acc) inset}
+.mcell.bad{border-color:var(--again);background:rgba(242,99,126,.15);animation:shake .32s}
+.mcell.ok{border-color:rgba(75,191,138,.4);background:rgba(75,191,138,.08);opacity:.42;cursor:default}
+.mcell:disabled{pointer-events:none}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 
 @media (max-width:520px){
   .term{font-size:32px}
@@ -159,6 +174,7 @@ h3{font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--tx3)
     <div class="spacer"></div>
     <div class="tabs">
       <button id="t-cram" class="on">Cram</button>
+      <button id="t-match">Match</button>
       <button id="t-study">Study</button>
       <button id="t-browse">Browse</button>
       <button id="t-stats">Stats</button>
@@ -169,6 +185,7 @@ h3{font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--tx3)
 
 <div class="wrap">
   <section id="v-cram"></section>
+  <section id="v-match" hidden></section>
   <section id="v-study" hidden></section>
   <section id="v-browse" hidden></section>
   <section id="v-stats" hidden></section>
@@ -311,7 +328,7 @@ function load(){
   try{ const r=localStorage.getItem(KEY); return r?JSON.parse(r):null; }catch(e){ return null; }
 }
 function save(){
-  const data={v:1,cards:state.cards,cfg:state.cfg,log:state.log,cram:state.cram};
+  const data={v:1,cards:state.cards,cfg:state.cfg,log:state.log,cram:state.cram,match:state.match};
   if(!canPersist){ memStore=data; return; }
   try{ localStorage.setItem(KEY,JSON.stringify(data)); }catch(e){}
 }
@@ -324,7 +341,7 @@ function newCard(w){ return {w, s:'new', ef:2.5, ivl:0, reps:0, lapses:0, due:0,
 let state={cards:{},cfg:{newPerDay:12,maxReviews:200},log:{}};
 (function init(){
   const s=load();
-  if(s){ state.cards=s.cards||{}; state.cfg=Object.assign(state.cfg,s.cfg||{}); state.log=s.log||{}; state.cram=s.cram||null; }
+  if(s){ state.cards=s.cards||{}; state.cfg=Object.assign(state.cfg,s.cfg||{}); state.log=s.log||{}; state.cram=s.cram||null; state.match=s.match||null; }
   VOCAB.forEach(v=>{ if(!state.cards[v.w]) state.cards[v.w]=newCard(v.w); });
   Object.keys(state.cards).forEach(k=>{ if(!VOCAB.find(v=>v.w===k)) delete state.cards[k]; });
   save();
@@ -497,14 +514,14 @@ function answer(g){
    after you get it right twice in a row. Misses come back ~2 cards later,
    hits you're not sure of come back ~6 cards later. Nothing here touches the
    SRS schedule. */
-const MASTERY=2, REQUEUE_MISS=2, REQUEUE_HIT=6;
+const MASTERY=2, REQUEUE_MISS=2, REQUEUE_SOSO=4, REQUEUE_HIT=6;
 let cramShown=false;
-function cramDefault(){ return {on:false,dir:'w2m',batch:20,order:[],start:0,queue:[],streak:{},miss:{},retired:[]}; }
+function cramDefault(){ return {on:false,dir:'w2m',batch:20,order:[],start:0,queue:[],streak:{},miss:{},soso:{},retired:[]}; }
 if(!state.cram) state.cram=cramDefault();
 else{ // drop any words that no longer exist in the deck
   const c=state.cram, ok=w=>!!byWord[w];
   c.order=(c.order||[]).filter(ok); c.queue=(c.queue||[]).filter(ok); c.retired=(c.retired||[]).filter(ok);
-  c.streak=c.streak||{}; c.miss=c.miss||{};
+  c.streak=c.streak||{}; c.miss=c.miss||{}; c.soso=c.soso||{};
   if(c.on&&!c.order.length) state.cram=cramDefault();
 }
 
@@ -520,16 +537,22 @@ function cramLoadBatch(){
   const c=state.cram;
   const size=c.batch==='all'?c.order.length:c.batch;
   const pool=c.order.slice(c.start,c.start+size);
-  c.queue=shuffle(pool); c.streak={}; c.miss={}; c.retired=[];
+  c.queue=shuffle(pool); c.streak={}; c.miss={}; c.soso={}; c.retired=[];
   cramShown=false;
 }
-function cramAnswer(ok){
+/* res: 'miss' | 'soso' | 'got'
+   soso keeps whatever streak you'd built (it isn't a failure) but doesn't
+   advance it either, and brings the word back sooner than a confident hit. */
+function cramAnswer(res){
   const c=state.cram, w=c.queue.shift();
   if(w===undefined) return;
-  if(ok){
+  if(res==='got'){
     c.streak[w]=(c.streak[w]||0)+1;
     if(c.streak[w]>=MASTERY){ c.retired.push(w); }
     else { c.queue.splice(Math.min(c.queue.length,REQUEUE_HIT),0,w); }
+  }else if(res==='soso'){
+    c.soso[w]=(c.soso[w]||0)+1;
+    c.queue.splice(Math.min(c.queue.length,REQUEUE_SOSO),0,w);
   }else{
     c.streak[w]=0; c.miss[w]=(c.miss[w]||0)+1;
     c.queue.splice(Math.min(c.queue.length,REQUEUE_MISS),0,w);
@@ -545,7 +568,8 @@ function renderCram(){
     const sizes=[[15,'15'],[20,'20'],[30,'30'],['all','All 122']];
     el.innerHTML=`<div class="setup">
       <h2>Cram session</h2>
-      <p>Drills words in batches until you get each one right twice in a row. Ignores the spaced-repetition schedule entirely — use this when you need the words in your head <i>today</i>.</p>
+      <p>Drills words in batches until you get each one right twice in a row. Ignores the spaced-repetition schedule entirely — use this when you need the words in your head <i>today</i>.
+      <br><br><b style="color:var(--again)">Missed it</b> resets the word &middot; <b style="color:var(--hard)">So-so</b> keeps your progress but brings it back sooner &middot; <b style="color:var(--good)">Got it</b> counts toward locking it in.</p>
       <div class="fld"><div class="lbl">Batch size</div><div class="opt" id="o-batch">
         ${sizes.map(([v,l])=>`<button data-v="${v}" class="${String(c.batch)===String(v)?'on':''}">${l}</button>`).join('')}
       </div><div class="note">Batches of 15–30 are far more effective than one 122-word marathon: you cycle back to a word while it's still fresh.</div></div>
@@ -568,20 +592,23 @@ function renderCram(){
 
   // batch finished
   if(!c.queue.length){
-    const missed=Object.keys(c.miss).filter(w=>c.miss[w]>0).sort((a,b)=>c.miss[b]-c.miss[a]);
+    const shaky=Object.keys(Object.assign({},c.miss,c.soso))
+      .filter(w=>(c.miss[w]||0)+(c.soso[w]||0)>0)
+      .sort((a,b)=>((c.miss[b]||0)*2+(c.soso[b]||0))-((c.miss[a]||0)*2+(c.soso[a]||0)));
+    const missed=shaky;
     const more=c.start+size<c.order.length;
     el.innerHTML=`<div class="done">
       <h2>&#10003; Batch ${batchNo} done</h2>
-      <p>${size} words mastered${missed.length?` &middot; ${missed.length} needed extra tries`:' &middot; clean run'}.
+      <p>${size} words mastered${shaky.length?` &middot; ${shaky.length} needed extra tries`:' &middot; clean run'}.
       ${more?`${c.order.length-c.start-size} words left overall.`:'That was the last batch.'}</p>
-      ${missed.length?`<div class="misslist" style="justify-content:center;max-width:560px;margin:0 auto 22px">${missed.slice(0,20).map(w=>`<span>${esc(w)}</span>`).join('')}</div>`:''}
+      ${shaky.length?`<div class="misslist" style="justify-content:center;max-width:560px;margin:0 auto 22px">${shaky.slice(0,24).map(w=>`<span${c.miss[w]?' style="border-color:rgba(242,99,126,.4)"':''}>${esc(w)}</span>`).join('')}</div>`:''}
       <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
         ${more?'<button class="btn p" id="next">Next batch</button>':''}
         ${missed.length?'<button class="btn" id="redo">Redo the shaky ones</button>':''}
         <button class="btn" id="quit">End session</button>
       </div></div>`;
     if(more)$('#next').onclick=()=>{c.start+=size;cramLoadBatch();save();renderCram();};
-    if(missed.length)$('#redo').onclick=()=>{c.queue=shuffle(missed);c.streak={};c.retired=[];cramShown=false;save();renderCram();};
+    if(missed.length)$('#redo').onclick=()=>{c.queue=shuffle(missed);c.streak={};c.miss={};c.soso={};c.retired=[];cramShown=false;save();renderCram();};
     $('#quit').onclick=()=>{state.cram=cramDefault();state.cram.batch=c.batch;state.cram.dir=c.dir;save();renderCram();};
     return;
   }
@@ -607,13 +634,139 @@ function renderCram(){
       <div class="sec"><div class="lbl">Definition</div><div class="def"><span class="pos">${esc(v.pos)}</span>${v.d}</div></div>
       <div class="sec"><div class="lbl">Example</div><div class="ex">${v.e}</div></div>
       <div class="sec"><div class="lbl">Memory hook</div><div class="mn"><span class="tag">${v.src==='book'?'from the book':'mnemonic'}</span>${v.m}</div></div>
-      <div class="two">
-        <button class="no" id="cno">Missed it<small>comes back in 2 cards &middot; 1</small></button>
-        <button class="yes" id="cyes">Got it<small>${(c.streak[w]||0)+1>=MASTERY?'locks in':'once more to lock in'} &middot; 2</small></button>
+      <div class="three">
+        <button class="no" id="cno">Missed it<small>back in 2 &middot; 1</small></button>
+        <button class="mid" id="cmid">So-so<small>back in 4 &middot; 2</small></button>
+        <button class="yes" id="cyes">Got it<small>${(c.streak[w]||0)+1>=MASTERY?'locks in':'1 more to lock'} &middot; 3</small></button>
       </div></div>`;
-    $('#cno').onclick=()=>cramAnswer(false);
-    $('#cyes').onclick=()=>cramAnswer(true);
+    $('#cno').onclick=()=>cramAnswer('miss');
+    $('#cmid').onclick=()=>cramAnswer('soso');
+    $('#cyes').onclick=()=>cramAnswer('got');
   }
+}
+
+/* ---------- MATCH MODE ----------
+   Pick a pool size, then pair word ↔ definition five at a time. */
+const PER_ROUND=5;
+function matchDefault(){ return {on:false,size:25,order:[],round:0,solved:[],wrong:{},tries:0,hits:0,t0:0,ms:0}; }
+if(!state.match) state.match=matchDefault();
+else{ const m=state.match; m.order=(m.order||[]).filter(w=>!!byWord[w]); m.wrong=m.wrong||{}; m.solved=m.solved||[];
+      if(m.on&&!m.order.length) state.match=matchDefault(); }
+let mPickW=null, mPickD=null, mFlash=null, mLeft=[], mRight=[];
+
+function matchBegin(){
+  const m=state.match;
+  m.order=shuffle(VOCAB.map(v=>v.w)).slice(0,m.size==='all'?VOCAB.length:m.size);
+  m.round=0; m.solved=[]; m.wrong={}; m.tries=0; m.hits=0; m.t0=Date.now(); m.ms=0; m.on=true;
+  matchLoadRound();
+}
+function matchRoundWords(){
+  const m=state.match;
+  return m.order.slice(m.round*PER_ROUND,(m.round+1)*PER_ROUND);
+}
+function matchLoadRound(){
+  mPickW=null; mPickD=null; mFlash=null;
+  const ws=matchRoundWords();
+  mLeft=shuffle(ws); mRight=shuffle(ws);
+  state.match.solved=[];
+}
+function matchTry(){
+  const m=state.match;
+  if(mPickW===null||mPickD===null) return;
+  m.tries++;
+  if(mPickW===mPickD){
+    m.hits++; m.solved.push(mPickW); mPickW=mPickD=null;
+    if(m.solved.length>=matchRoundWords().length){
+      const last=(m.round+1)*PER_ROUND>=m.order.length;
+      if(last){ m.ms=Date.now()-m.t0; m.round=-1; save(); renderMatch(); return; }
+      m.round++; matchLoadRound();
+    }
+    save(); renderMatch();
+  }else{
+    m.wrong[mPickW]=(m.wrong[mPickW]||0)+1;
+    mFlash=[mPickW,mPickD];
+    renderMatch();
+    setTimeout(()=>{ mFlash=null; mPickW=mPickD=null; save(); renderMatch(); },520);
+  }
+}
+function fmtMs(ms){ const s=Math.round(ms/1000); return (s>=60?Math.floor(s/60)+'m ':'')+(s%60)+'s'; }
+
+function renderMatch(){
+  const el=$('#v-match'), m=state.match;
+
+  if(!m.on){
+    const sizes=[[10,'10'],[25,'25'],[50,'50'],['all','All 122']];
+    el.innerHTML=`<div class="setup">
+      <h2>Matching</h2>
+      <p>Pair each word with its definition, five at a time. Faster than flashcards and it forces you to tell similar words apart — <i>averse</i> vs <i>adverse</i>, <i>explicit</i> vs <i>implicit</i>.</p>
+      <div class="fld"><div class="lbl">How many words</div><div class="opt" id="m-size">
+        ${sizes.map(([v,l])=>`<button data-v="${v}" class="${String(m.size)===String(v)?'on':''}">${l}</button>`).join('')}
+      </div><div class="note">Drawn at random from all 122. ${'You’ll play them in rounds of '+PER_ROUND+' pairs.'}</div></div>
+      <button class="btn p" id="mgo" style="margin-top:22px;width:100%;padding:14px">Start matching</button>
+    </div>`;
+    el.querySelectorAll('#m-size button').forEach(b=>b.onclick=()=>{m.size=b.dataset.v==='all'?'all':+b.dataset.v;save();renderMatch();});
+    $('#mgo').onclick=()=>{matchBegin();save();renderMatch();};
+    return;
+  }
+
+  const total=m.order.length;
+
+  // finished
+  if(m.round===-1){
+    const bad=Object.keys(m.wrong).sort((a,b)=>m.wrong[b]-m.wrong[a]);
+    const acc=m.tries?Math.round(m.hits/m.tries*100):100;
+    $('#pbar').style.width='100%';
+    el.innerHTML=`<div class="done">
+      <h2>&#10003; ${total} matched</h2>
+      <p>${fmtMs(m.ms)} &middot; ${acc}% accuracy &middot; ${m.tries-m.hits} wrong attempt${m.tries-m.hits===1?'':'s'}</p>
+      ${bad.length?`<div class="lbl" style="text-align:center;margin-bottom:8px">Tripped you up</div>
+        <div class="misslist" style="justify-content:center;max-width:560px;margin:0 auto 22px">${bad.slice(0,24).map(w=>`<span>${esc(w)}</span>`).join('')}</div>`:''}
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        ${bad.length>=2?'<button class="btn p" id="mredo">Replay the ones I missed</button>':''}
+        <button class="btn${bad.length>=2?'':' p'}" id="magain">New random set</button>
+        <button class="btn" id="mquit">Change size</button>
+      </div></div>`;
+    if(bad.length>=2)$('#mredo').onclick=()=>{
+      m.order=shuffle(bad); m.round=0; m.wrong={}; m.tries=0; m.hits=0; m.t0=Date.now();
+      matchLoadRound(); save(); renderMatch();
+    };
+    $('#magain').onclick=()=>{matchBegin();save();renderMatch();};
+    $('#mquit').onclick=()=>{state.match=matchDefault();state.match.size=m.size;save();renderMatch();};
+    return;
+  }
+
+  const ws=matchRoundWords();
+  const doneCount=m.round*PER_ROUND+m.solved.length;
+  $('#pbar').style.width=(doneCount/total*100)+'%';
+
+  const cell=(w,side)=>{
+    const solved=m.solved.includes(w);
+    const picked=(side==='w'?mPickW:mPickD)===w;
+    const bad=mFlash&&((side==='w'&&mFlash[0]===w)||(side==='d'&&mFlash[1]===w));
+    const cls='mcell'+(solved?' ok':'')+(picked?' sel':'')+(bad?' bad':'');
+    const body=side==='w'
+      ? `<b>${esc(byWord[w].w)}</b>`
+      : `<span class="pos">${esc(byWord[w].pos)}</span>${byWord[w].d}`;
+    return `<button class="${cls}" data-side="${side}" data-w="${esc(w)}"${solved?' disabled':''}>${body}</button>`;
+  };
+
+  el.innerHTML=`<div class="cramtop">
+      <span>Round ${m.round+1}/${Math.ceil(total/PER_ROUND)}</span>
+      <div class="track"><i style="width:${doneCount/total*100}%"></i></div>
+      <span><b>${doneCount}</b>/${total} matched</span>
+    </div>
+    <div class="mgrid">
+      <div class="mcol words">${mLeft.map(w=>cell(w,'w')).join('')}</div>
+      <div class="mcol">${mRight.map(w=>cell(w,'d')).join('')}</div>
+    </div>
+    <div class="note" style="text-align:center">Tap a word, then its definition. ${m.tries-m.hits>0?`<span class="warn">${m.tries-m.hits} wrong so far</span>`:''}</div>`;
+
+  el.querySelectorAll('.mcell').forEach(b=>b.onclick=()=>{
+    if(mFlash) return;
+    const w=b.dataset.w;
+    if(b.dataset.side==='w') mPickW=(mPickW===w?null:w); else mPickD=(mPickD===w?null:w);
+    if(mPickW!==null&&mPickD!==null) matchTry(); else renderMatch();
+  });
 }
 
 /* ---------- browse ---------- */
@@ -726,16 +879,18 @@ function renderStats(){
 /* ---------- nav ---------- */
 function go(t){
   tab=t;
-  ['cram','study','browse','stats'].forEach(x=>{
+  ['cram','match','study','browse','stats'].forEach(x=>{
     $('#v-'+x).hidden=(x!==t);
     $('#t-'+x).classList.toggle('on',x===t);
   });
   if(t==='cram')renderCram();
+  else if(t==='match')renderMatch();
   else if(t==='study')renderStudy();
   else if(t==='browse')renderBrowse();
   else renderStats();
 }
 $('#t-cram').onclick=()=>go('cram');
+$('#t-match').onclick=()=>go('match');
 $('#t-study').onclick=()=>go('study');
 $('#t-browse').onclick=()=>go('browse');
 $('#t-stats').onclick=()=>go('stats');
@@ -744,11 +899,13 @@ document.addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;
   if(tab==='cram'){
     if(!state.cram.on||!state.cram.queue.length)return;
-    if(e.code==='Space'||e.key==='Enter'){ e.preventDefault(); if(!cramShown){cramShown=true;renderCram();} else cramAnswer(true); }
-    else if(cramShown&&(e.key==='1')){ e.preventDefault(); cramAnswer(false); }
-    else if(cramShown&&(e.key==='2')){ e.preventDefault(); cramAnswer(true); }
+    if(e.code==='Space'||e.key==='Enter'){ e.preventDefault(); if(!cramShown){cramShown=true;renderCram();} else cramAnswer('got'); }
+    else if(cramShown&&e.key==='1'){ e.preventDefault(); cramAnswer('miss'); }
+    else if(cramShown&&e.key==='2'){ e.preventDefault(); cramAnswer('soso'); }
+    else if(cramShown&&e.key==='3'){ e.preventDefault(); cramAnswer('got'); }
     return;
   }
+  if(tab==='match')return;
   if(tab!=='study')return;
   if(e.code==='Space'||e.key==='Enter'){ e.preventDefault(); if(!shown&&cur&&!cur.__wait){shown=true;renderStudy();} else if(shown) answer(3); }
   else if(shown&&['1','2','3','4'].includes(e.key)){ e.preventDefault(); answer(+e.key); }
